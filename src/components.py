@@ -41,7 +41,23 @@ class Inventory(Component):
             "items": [ItemInstance.fromDict()]
         }
 
+class AI(Component):
+    def __init__(self):
+        ...
+        
+    @classmethod
+    def fromDict(cls, data):
+        ai = cls()
+        return ai
+
+    def toDict(self):
+        return {
+            "type": "ai"
+        }
+
 def componentFromData(data):
     type = data["type"]
     if type == "inventory":
         return Inventory.fromDict(data)
+    elif type == "ai":
+        return AI.fromDict(data)
