@@ -4,10 +4,12 @@ class ItemType:
         self.description = description
         self.tags = tags
         self.stack = stack
+        self.uses = []
         
     @classmethod
     def fromDict(cls, data):
-        return cls(**data)
+        item = cls(data["name"], data["description"], data["tag"], data["stack"])
+        return item
 
 class ItemInstance:
     def __init__(self, item_type):
