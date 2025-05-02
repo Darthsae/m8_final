@@ -3,15 +3,34 @@
   "description": "Flee to an adjacent room.",
   "effects": [
     {
-      "type": "",
-      "respect_cap": true,
-      "target": 0,
-      "amount": 20
+      "type": "flee",
+      "target": 0
+    },
+    {
+      "type": "change_room",
+      "x_min": -1,
+      "x_max": 1,
+      "y_min": -1,
+      "y_max": 1,
+      "target": 0
+    },
+    {
+      "type": "add_data",
+      "decay": 6,
+      "data": "flee_cooldown",
+      "value": true,
+      "target": 0
     }
   ], 
   "targets": [
     "consumer"
   ],
   "requirements": [
+    {
+      "type": "check_data",
+      "present": false,
+      "data": "flee_cooldown",
+      "target": 0
+    }
   ]
 }
