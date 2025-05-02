@@ -1,3 +1,13 @@
+class LevelDetail:
+    def __init__(self):
+        ...
+    
+    @classmethod
+    def fromDict(cls, data):
+        level_detail = cls()
+
+        return level_detail
+
 class ClassType:
     def __init__(self, name, description, level_data):
         self.name = name
@@ -6,7 +16,9 @@ class ClassType:
         
     @classmethod
     def fromDict(cls, data):
-        return cls(**data)
+        class_type = cls(data["name"], data["description"], data["level_data"])
+        
+        return class_type
     
 class ClassInstance:
     def __init__(self, class_type, level):
@@ -18,7 +30,10 @@ class ClassInstance:
     
     @classmethod
     def fromDict(cls, data):
-        return cls(**data)
+        return cls(data["type"], data["level"])
     
     def toDict(self):
-        return {}
+        return {
+            "type": self.__class_type,
+            "level": self.level
+        }

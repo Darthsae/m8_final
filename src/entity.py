@@ -9,9 +9,13 @@ class EntityType:
         
     @classmethod
     def fromDict(cls, data):
-        return cls(**data)
+        entity_type = cls(data["name"], data["description"], data["hp"])
+
+        return entity_type
 
 class EntityInstance:
+    NULL_ENTITY_TYPE = EntityType("", "", 1)
+
     def __init__(self, entity_type):
         self.__entity_type = entity_type
         self.name = self.__entity_type.name
@@ -36,6 +40,7 @@ class EntityInstance:
             entity.xp = data["xp"]
         if "classes" in data:
             entity.__classes = [ClassInstance.fromDict(class_data) for class_data in data["classes"]]
+        return entity
     
     def toDict(self):
         return {
