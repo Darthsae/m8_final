@@ -4,7 +4,7 @@ class LevelDetail:
         self.features = features
         self.abilities = abilities
     
-    def applyLevelDetail(self, apply_to):
+    def applyTo(self, apply_to):
         for feature in self.features:
             ...
         for ability in self.abilities:
