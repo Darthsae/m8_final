@@ -1,6 +1,9 @@
 class LevelDetail:
     def __init__(self):
         ...
+
+    def applyLevelDetail(self, apply_to):
+        ...
     
     @classmethod
     def fromDict(cls, data):
@@ -13,7 +16,10 @@ class ClassType:
         self.name = name
         self.description = description
         self.level_data = level_data
-        
+
+    def maxLevel(self):
+        return len(level_data)
+    
     @classmethod
     def fromDict(cls, data):
         class_type = cls(data["name"], data["description"], data["level_data"])
