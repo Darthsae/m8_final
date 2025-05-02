@@ -36,7 +36,16 @@ class EntityInstance:
     def gainClassLevel(self, class_type):
         for class_instance in self.__classes:
             if class_instance.getType() == class_type:
-                level = class_instance.level
+                level = class_instance.level + 1
+                if level == class_type.maxLevel():
+                    return
+                else:
+                    class_type.level_data[level].applyTo(self)
+                    class_instance.level += 1
+                    return
+        class_instance = ClassInstance(class_type, 0)
+        class_type.level_data[0].applyTo(self)
+        self.__classes.append(class_instance)
     
     @classmethod
     def fromDict(cls, data):
