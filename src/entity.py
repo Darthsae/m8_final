@@ -32,7 +32,12 @@ class EntityInstance:
         self.__classes = []
         self.xp = self.__entity_type.xp
         self.data = {}
-        
+
+    def gainClassLevel(self, class_type):
+        for class_instance in self.__classes:
+            if class_instance.getType() == class_type:
+                level = class_instance.level
+    
     @classmethod
     def fromDict(cls, data):
         entity = cls(data["type"])
