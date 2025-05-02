@@ -1,5 +1,9 @@
 {
-    "name": "Skeleton",
-    "description": "",
-    "hp": 25
+  "name": "Skeleton",
+  "description": "Rattling bones that should be laying dormant.",
+  "tags": [
+    "undead"
+  ],
+  "hp": 25,
+  "xp": 5
 }
