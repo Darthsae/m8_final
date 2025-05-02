@@ -153,15 +153,17 @@ class Game:
                     ])
                 ])),
             "dungeon_exploration": MenuType(
-                noFunction,
-                noFunction
+                self.displayDungeonExploration,
+                input
             )
         }
 
     def createCharacter(self):
+        self.player.name = self.popDataFromCache("character_name")()
         self.player.max_hp = 100
         self.player.hp = 100
         self.player.components.append(Inventory(12))
+        self.player.gainLevelInClass(self.popDataFromCache("character_class")())
 
     def mods(self):
         return self.__mods
@@ -241,6 +243,13 @@ class Game:
 
     def popMenu(self):
         self.menu_stack.pop()
+
+    def displayDungeonExploration(self):
+        print(self.player.name)
+        print(self.player.classesDisplayString())
+
+    def inputDungeonExploration(self):
+        input()
     
     @classmethod
     def fromDict(cls, data):
