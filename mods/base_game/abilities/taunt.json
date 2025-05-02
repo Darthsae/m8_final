@@ -1,0 +1,35 @@
+{
+  "name": "Taunt",
+  "description": "Taunt a creature.",
+  "effects": [
+    {
+      "type": "add_data",
+      "decay": 3,
+      "data": "taunted_by",
+      "value": {
+        "type": "target",
+        "target": 0
+      },
+      "target": 1
+    },
+    {
+      "type": "add_data",
+      "decay": 2,
+      "data": "flee_cooldown",
+      "value": true,
+      "target": 0
+    }
+  ], 
+  "targets": [
+    "consumer",
+    "creature"
+  ],
+  "requirements": [
+    {
+      "type": "check_data",
+      "present": false,
+      "data": "taunt_cooldown",
+      "target": 0
+    }
+  ]
+}
