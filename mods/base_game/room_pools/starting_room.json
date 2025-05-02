@@ -1,0 +1,10 @@
+{
+  "name": "starting_room",
+  "rooms": [],
+  "conditions": [],
+  "restrictions": {
+    "required": [],
+    "allowed": [],
+    "excluded": []
+  }
+}
