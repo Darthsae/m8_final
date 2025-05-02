@@ -33,6 +33,12 @@ class EntityInstance:
         self.xp = self.__entity_type.xp
         self.data = {}
 
+    def getClassesDisplayString(self):
+        string = ""
+        for class_data in self.__classes:
+            string += class_data.getType().name + " " + class_data.level + "\n"
+        return string
+    
     def gainClassLevel(self, class_type):
         for class_instance in self.__classes:
             if class_instance.getType() == class_type:
