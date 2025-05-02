@@ -1,13 +1,18 @@
 class LevelDetail:
-    def __init__(self):
-        ...
-
+    def __init__(self, xp_cost, features, abilities):
+        self.xp_cost = xp_cost
+        self.features = features
+        self.abilities = abilities
+    
     def applyLevelDetail(self, apply_to):
-        ...
+        for feature in self.features:
+            ...
+        for ability in self.abilities:
+            ...
     
     @classmethod
     def fromDict(cls, data):
-        level_detail = cls()
+        level_detail = cls(data["xp_cost"], data["features"], data["abilities"])
 
         return level_detail
 
