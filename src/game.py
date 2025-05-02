@@ -163,7 +163,7 @@ class Game:
         self.player.max_hp = 100
         self.player.hp = 100
         self.player.components.append(Inventory(12))
-        self.player.gainLevelInClass(self.popDataFromCache("character_class")())
+        self.player.gainClassLevel(self.popDataFromCache("character_class")())
 
     def mods(self):
         return self.__mods
@@ -246,7 +246,7 @@ class Game:
 
     def displayDungeonExploration(self):
         print(self.player.name)
-        print(self.player.classesDisplayString())
+        print(self.player.getClassesDisplayString())
 
     def inputDungeonExploration(self):
         input()
