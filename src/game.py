@@ -234,6 +234,11 @@ class Game:
             return self.menu_cache[name]
         return toReturn
 
+    def popDataFromCache(self, name):
+        def toReturn():
+            return self.menu_cache.pop(name)
+        return toReturn
+
     def popMenu(self):
         self.menu_stack.pop()
     
