@@ -1,3 +1,17 @@
 {
-  
+  "name": "Escape Rope",
+  "description": "Flee to an adjacent room.",
+  "effects": [
+    {
+      "type": "",
+      "respect_cap": true,
+      "target": 0,
+      "amount": 20
+    }
+  ], 
+  "targets": [
+    "consumer"
+  ],
+  "requirements": [
+  ]
 }
