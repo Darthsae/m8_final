@@ -37,5 +37,11 @@ class Inventory(Component):
 
     def toDict(self):
         return {
+            "type": "inventory",
             "items": [ItemInstance.fromDict()]
         }
+
+def componentFromData(data):
+    type = data["type"]
+    if type == "inventory":
+        return Inventory.fromDict(data)
