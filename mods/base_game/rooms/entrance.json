@@ -1,4 +1,8 @@
 {
     "name": "Entrance",
-    "description": "The entrance is a dark room that leads to."
+    "description": "The entrance is a dark room that leads to.",
+    "tags": [
+        "starting_room",
+        "no_hostile_entities"
+    ]
 }
