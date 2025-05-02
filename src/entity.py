@@ -1,15 +1,18 @@
 from .classes import ClassInstance
 
 class EntityType:
-    def __init__(self, name, description, hp):
+    def __init__(self, name, description, hp, xp):
         self.name = name
         self.description = description
         self.hp = hp
         self.components = []
+        self.actions = []
+        self.classes = []
+        self.xp = xp
         
     @classmethod
     def fromDict(cls, data):
-        entity_type = cls(data["name"], data["description"], data["hp"])
+        entity_type = cls(data["name"], data["description"], data["hp"], data["xp"])
 
         return entity_type
 
@@ -25,7 +28,7 @@ class EntityInstance:
         self.components = self.__entity_type.components
         self.actions = []
         self.__classes = []
-        self.xp = 0
+        self.xp = self.__entity_type.xp
         
     @classmethod
     def fromDict(cls, data):
@@ -38,6 +41,8 @@ class EntityInstance:
             entity.hp = data["hp"]
         if "xp" in data:
             entity.xp = data["xp"]
+        if "components" in data:
+            entity.components = [componentFromDict(component_data) for component_data in data["components"]]
         if "classes" in data:
             entity.__classes = [ClassInstance.fromDict(class_data) for class_data in data["classes"]]
         return entity
@@ -49,5 +54,6 @@ class EntityInstance:
             "description": self.description,
             "hp": self.hp,
             "xp": self.xp,
+            "components": [component_data.toDict() for component_data in self.components],
             "classes": [class_data.toDict() for class_data in self.__classes]
         }
