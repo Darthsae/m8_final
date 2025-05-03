@@ -1,0 +1,9 @@
+{
+  "name": "Zombie",
+  "description": "Groans and moans of the dead sound quite annoying.",
+  "tags": [
+    "undead"
+  ],
+  "hp": 40,
+  "xp": 10
+}

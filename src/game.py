@@ -154,7 +154,7 @@ class Game:
                 ])),
             "dungeon_exploration": MenuType(
                 self.displayDungeonExploration,
-                input
+                self.inputDungeonExploration
             )
         }
 
@@ -163,7 +163,7 @@ class Game:
         self.player.max_hp = 100
         self.player.hp = 100
         self.player.components.append(Inventory(12))
-        self.player.gainClassLevel(self.popDataFromCache("character_class")())
+        self.player.gainClassLevel(self.class_types[self.popDataFromCache("character_class")()])
 
     def mods(self):
         return self.__mods
@@ -249,7 +249,11 @@ class Game:
         print(self.player.getClassesDisplayString())
 
     def inputDungeonExploration(self):
-        input()
+        command = input().split()
+        command_key = command[0]
+
+        if command_key == "saves":
+            self.addMenu("")()
     
     @classmethod
     def fromDict(cls, data):

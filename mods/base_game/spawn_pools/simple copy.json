@@ -1,0 +1,10 @@
+{
+  "name": "simple",
+  "effects": [],
+  "conditions": [],
+  "restrictions": {
+    "required": [],
+    "allowed": [],
+    "excluded": []
+  }
+}

@@ -1,21 +1,17 @@
 {
-  "name": "Taunt",
-  "description": "Taunt a creature.",
+  "name": "Death Bolt",
+  "description": "Launch a necrotic bolt of energy at a creature.",
   "effects": [
     {
-      "type": "add_data",
-      "decay": 3,
-      "data": "taunted_by",
-      "value": {
-        "type": "target",
-        "target": 0
-      },
-      "target": 1
+      "type": "change_hp",
+      "respect_cap": true,
+      "target": 1,
+      "amount": -15
     },
     {
       "type": "add_data",
       "decay": 2,
-      "data": "taunt_cooldown",
+      "data": "death_bolt_cooldown",
       "value": true,
       "target": 0
     }
@@ -28,7 +24,7 @@
     {
       "type": "check_data",
       "present": false,
-      "data": "taunt_cooldown",
+      "data": "death_bolt_cooldown",
       "target": 0
     }
   ]

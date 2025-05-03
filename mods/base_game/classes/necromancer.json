@@ -1,0 +1,37 @@
+{
+    "name": "Necromancer",
+    "description": "Raise the dead.",
+    "level_data": [
+      {
+        "xp_cost": 0,
+        "features": [
+          {
+            "type": "change_max_hp",
+            "amount": 15
+          }
+        ],
+        "abilities": [
+          {
+            "type": "add",
+            "ability": "escape_rope"
+          }
+        ]
+      },
+      {
+        "xp_cost": 50,
+        "features": [
+          {
+            "type": "change_max_hp",
+            "amount": 15
+          }
+        ],
+        "abilities": [
+          {
+            "type": "add",
+            "ability": "taunt"
+          }
+        ]
+      }
+    ]
+  }
+  

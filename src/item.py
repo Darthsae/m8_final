@@ -8,7 +8,7 @@ class ItemType:
         
     @classmethod
     def fromDict(cls, data):
-        item = cls(data["name"], data["description"], data["tag"], data["stack"])
+        item = cls(data["name"], data["description"], data["tags"], data["stack"])
         return item
 
 class ItemInstance:

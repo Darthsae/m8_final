@@ -11,13 +11,14 @@ class Interactable:
         return {}
 
 class RoomType:
-    def __init__(self, name, description):
+    def __init__(self, name, description, tags):
         self.name = name
         self.description = description
+        self.tags = tags
         
     @classmethod
     def fromDict(cls, data):
-        room_type = cls(data["name"], data["description"])
+        room_type = cls(data["name"], data["description"], data["tags"])
 
         return room_type
         

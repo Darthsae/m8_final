@@ -23,11 +23,11 @@ class ClassType:
         self.level_data = level_data
 
     def maxLevel(self):
-        return len(level_data)
+        return len(self.level_data)
     
     @classmethod
     def fromDict(cls, data):
-        class_type = cls(data["name"], data["description"], data["level_data"])
+        class_type = cls(data["name"], data["description"], [LevelDetail.fromDict(level_data) for level_data in data["level_data"]])
         
         return class_type
     

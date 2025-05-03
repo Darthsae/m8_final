@@ -33,3 +33,8 @@ def boolput(prompt, case_sensitive, true_values):
     """
     answer = input(prompt)
     return answer.lower() if case_sensitive else answer in true_values
+
+class DoubleValue:
+    def __init__(self, value_one, value_two):
+        self.value_one = value_one
+        self.value_two = value_two

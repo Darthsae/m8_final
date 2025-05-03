@@ -1,4 +1,6 @@
 from .classes import ClassInstance
+from .components import componentFromData
+from .util import DoubleValue
 
 class EntityType:
     def __init__(self, name, description, tags, hp, xp):
@@ -36,8 +38,18 @@ class EntityInstance:
     def getClassesDisplayString(self):
         string = ""
         for class_data in self.__classes:
-            string += class_data.getType().name + " " + class_data.level + "\n"
+            string += class_data.getType().name + " " + str(class_data.level) + "\n"
         return string
+    
+    def update(self):
+        for key in self.data:
+            value = self.data.pop(key)
+            if value[1] == 0:
+                pass
+            elif value[1] == -1:
+                self.data[key] = value
+            else:
+                self.data[key] = (value[0], value[1] - 1)
     
     def gainClassLevel(self, class_type):
         for class_instance in self.__classes:
@@ -52,6 +64,26 @@ class EntityInstance:
         class_instance = ClassInstance(class_type, 0)
         class_type.level_data[0].applyTo(self)
         self.__classes.append(class_instance)
+
+    def changeHP(self, amount, respect_cap):
+        pre_hp = max(self.hp, self.max_hp)
+        self.hp = max(self.hp + amount, 0)
+        if respect_cap:
+            self.hp = min(self.hp, pre_hp)
+        if self.hp == 0:
+            ...
+    
+    def flee(self):
+        ...
+
+    def changeRoom(self, x, y):
+        ...
+    
+    def hasData(self, key):
+        return key in self.data
+
+    def addData(self, key, value, decay):
+        self.data[key] = (value, decay)
     
     @classmethod
     def fromDict(cls, data):
@@ -67,7 +99,7 @@ class EntityInstance:
         if "xp" in data:
             entity.xp = data["xp"]
         if "components" in data:
-            entity.components = [componentFromDict(component_data) for component_data in data["components"]]
+            entity.components = [componentFromData(component_data) for component_data in data["components"]]
         if "classes" in data:
             entity.__classes = [ClassInstance.fromDict(class_data) for class_data in data["classes"]]
         if "data" in data:

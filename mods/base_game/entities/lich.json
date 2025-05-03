@@ -1,0 +1,10 @@
+{
+  "name": "Lich",
+  "description": "The dead do not dare to rest under their baleful gazes.",
+  "tags": [
+    "undead",
+    "mini_boss"
+  ],
+  "hp": 125,
+  "xp": 50
+}
