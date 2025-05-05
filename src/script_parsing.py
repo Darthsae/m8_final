@@ -34,6 +34,21 @@ def parse(data):
         target = data["target"]
         def toReturn(targets):
             targets[target].changeRoom(random.randint(x_min, x_max), random.randint(y_min, y_max))
+    elif data_type == "room_chain":
+        room_pool = data["room_pool"]
+        min = data["min"]
+        max = data["max"]
+        position = parseValue(data["position"])
+        target = data["target"]
+        def toReturn(targets):
+            return min <= targets[target].roomChain(position, room_pool) <= max
+    elif data_type == "room_pool_count":
+        room_pool = data["room_pool"]
+        min = data["min"]
+        max = data["max"]
+        target = data["target"]
+        def toReturn(targets):
+            return min <= targets[target].roomPoolCount(room_pool) <= max
     
     return toReturn
 

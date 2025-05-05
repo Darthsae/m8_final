@@ -1,7 +1,8 @@
 from .script_parsing import parse
 
 class AbilityType:
-    def __init__(self, name, description, effects, targets, requirements):
+    def __init__(self, id, name, description, effects, targets, requirements):
+        self.id = id
         self.name = name
         self.description = description
         self.effects = [parse(effect) for effect in effects]
@@ -9,8 +10,8 @@ class AbilityType:
         self.requirements = [parse(requirement) for requirement in requirements]
 
     @classmethod
-    def fromDict(cls, data):
-        ability = cls(data["name"], data["description"], data["effects"], data["targets"], data["requirements"])
+    def fromDict(cls, id, data):
+        ability = cls(id, data["name"], data["description"], data["effects"], data["targets"], data["requirements"])
         return ability
 
 class AbilityInstance:
@@ -37,11 +38,11 @@ class AbilityInstance:
             effect(targets)
 
     @classmethod
-    def fromDict(cls, data):
-        ability = cls(data["type"])
+    def fromDict(cls, data, ability_types):
+        ability = cls(ability_types[data["type"]])
         return ability
     
     def toDict(self):
         return {
-            "type": self.__ability_type,
+            "type": self.__ability_type.id,
         }

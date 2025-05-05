@@ -38,3 +38,33 @@ class DoubleValue:
     def __init__(self, value_one, value_two):
         self.value_one = value_one
         self.value_two = value_two
+
+class Restrictions:
+    def __init__(self, required, allowed, excluded):
+        self.required = required
+        self.allowed = allowed
+        self.excluded = excluded
+    
+    def score(self, tags):
+        requirements = set(self.required)
+        score = 0
+        for tag in tags:
+            if tag in self.excluded:
+                return 0
+            elif tag in requirements:
+                requirements.remove(tag)
+            elif tag in self.allowed:
+                score += 1
+        return 0 if len(requirements) > 0 else score
+    
+    @classmethod
+    def fromDict(cls, data):
+        return cls(data["required"], data["allowed"], data["excluded"])
+
+def adjacentPositions(position):
+    return [
+        (position[0] + 1, position[1]    ),
+        (position[0] - 1, position[1]    ),
+        (position[0]    , position[1] + 1),
+        (position[0]    , position[1] - 1)
+    ]

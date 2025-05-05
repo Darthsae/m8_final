@@ -1,0 +1,27 @@
+{
+  "name": "connecting_room",
+  "rooms": [
+    "hall"
+  ],
+  "tags": [],
+  "conditions": [
+    {
+      "type": "room_chain",
+      "room_pool": "starting_room",
+      "min": 0,
+      "max": 4,
+      "position": {
+        "type": "target",
+        "target": 1
+      },
+      "target": 0
+    }
+  ],
+  "restrictions": {
+    "required": [],
+    "allowed": [
+      "starting_room"
+    ],
+    "excluded": []
+  }
+}

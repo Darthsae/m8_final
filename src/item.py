@@ -1,5 +1,6 @@
 class ItemType:
-    def __init__(self, name, description, tags, stack):
+    def __init__(self, id, name, description, tags, stack):
+        self.id = id
         self.name = name
         self.description = description
         self.tags = tags
@@ -7,8 +8,8 @@ class ItemType:
         self.uses = []
         
     @classmethod
-    def fromDict(cls, data):
-        item = cls(data["name"], data["description"], data["tags"], data["stack"])
+    def fromDict(cls, id, data):
+        item = cls(id, data["name"], data["description"], data["tags"], data["stack"])
         return item
 
 class ItemInstance:
@@ -28,8 +29,8 @@ class ItemInstance:
         return self.__item_type
     
     @classmethod
-    def fromDict(cls, data):
-        item = cls(data["type"])
+    def fromDict(cls, data, item_types):
+        item = cls(item_types[data["type"]])
         if "name" in data:
             item.name = data["name"]
         if "description" in data:
@@ -44,7 +45,7 @@ class ItemInstance:
     
     def toDict(self):
         return {
-            "type": self.__item_type,
+            "type": self.__item_type.id,
             "name": self.name,
             "description": self.description,
             "tags": self.tags,

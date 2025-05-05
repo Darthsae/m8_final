@@ -4,7 +4,8 @@ from .util import DoubleValue
 from .ability import AbilityInstance
 
 class EntityType:
-    def __init__(self, name, description, tags, hp, xp):
+    def __init__(self, id, name, description, tags, hp, xp, speed):
+        self.id = id
         self.name = name
         self.description = description
         self.tags = tags
@@ -13,15 +14,16 @@ class EntityType:
         self.actions = []
         self.classes = []
         self.xp = xp
+        self.speed = speed
         
     @classmethod
-    def fromDict(cls, data):
-        entity_type = cls(data["name"], data["description"], data["tags"], data["hp"], data["xp"])
+    def fromDict(cls, id, data):
+        entity_type = cls(id, data["name"], data["description"], data["tags"], data["hp"], data["xp"], data["speed"])
 
         return entity_type
 
 class EntityInstance:
-    NULL_ENTITY_TYPE = EntityType("", "", [], 1, 0)
+    NULL_ENTITY_TYPE = EntityType("", "", "", [], 1, 0, 0)
 
     def __init__(self, entity_type):
         self.__entity_type = entity_type
@@ -34,6 +36,7 @@ class EntityInstance:
         self.actions = []
         self.__classes = []
         self.xp = self.__entity_type.xp
+        self.speed = self.__entity_type.speed
         self.data = {}
 
     def getClassesDisplayString(self):
@@ -90,8 +93,8 @@ class EntityInstance:
         self.data[key] = (value, decay)
     
     @classmethod
-    def fromDict(cls, data):
-        entity = cls(data["type"])
+    def fromDict(cls, data, entity_types):
+        entity = cls(entity_types[data["type"]])
         if "name" in data:
             entity.name = data["name"]
         if "description" in data:
@@ -102,6 +105,8 @@ class EntityInstance:
             entity.hp = data["hp"]
         if "xp" in data:
             entity.xp = data["xp"]
+        if "speed" in data:
+            entity.speed = data["speed"]
         if "components" in data:
             entity.components = [componentFromData(component_data) for component_data in data["components"]]
         if "classes" in data:
@@ -112,12 +117,13 @@ class EntityInstance:
     
     def toDict(self):
         return {
-            "type": self.__entity_type,
+            "type": self.__entity_type.id,
             "name": self.name,
             "description": self.description,
             "tags": self.tags,
             "hp": self.hp,
             "xp": self.xp,
+            "speed": self.speed,
             "components": [component_data.toDict() for component_data in self.components],
             "classes": [class_data.toDict() for class_data in self.__classes],
             "data": self.data

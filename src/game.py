@@ -198,34 +198,34 @@ class Game:
             if file.is_dir and file.name in ["classes", "entities", "items", "rooms", "abilities"]:
                 if file.name == "classes":
                     print("Classes is present.")
-                    for entity_json in os.scandir(path + "/classes"):
-                        if entity_json.is_file() and entity_json.name[-5:] == ".json":
-                            with open(entity_json.path, "r") as f:
-                                self.class_types[entity_json.name[:-5]] = ClassType.fromDict(json.load(f))
+                    for class_json in os.scandir(path + "/classes"):
+                        if class_json.is_file() and class_json.name[-5:] == ".json":
+                            with open(class_json.path, "r") as f:
+                                self.class_types[class_json.name[:-5]] = ClassType.fromDict(class_json.name[:-5], json.load(f))
                 elif file.name == "entities":
                     print("Entities is present.")
                     for entity_json in os.scandir(path + "/entities"):
                         if entity_json.is_file() and entity_json.name[-5:] == ".json":
                             with open(entity_json.path, "r") as f:
-                                self.entity_types[entity_json.name[:-5]] = EntityType.fromDict(json.load(f))
+                                self.entity_types[entity_json.name[:-5]] = EntityType.fromDict(entity_json.name[:-5], json.load(f))
                 elif file.name == "items":
                     print("Items is present.")
-                    for room_json in os.scandir(path + "/items"):
-                        if room_json.is_file() and room_json.name[-5:] == ".json":
-                            with open(room_json.path, "r") as f:
-                                self.item_types[room_json.name[:-5]] = ItemType.fromDict(json.load(f))
+                    for item_json in os.scandir(path + "/items"):
+                        if item_json.is_file() and item_json.name[-5:] == ".json":
+                            with open(item_json.path, "r") as f:
+                                self.item_types[item_json.name[:-5]] = ItemType.fromDict(item_json.name[:-5], json.load(f))
                 elif file.name == "rooms":
                     print("Rooms is present.")
                     for room_json in os.scandir(path + "/rooms"):
                         if room_json.is_file() and room_json.name[-5:] == ".json":
                             with open(room_json.path, "r") as f:
-                                self.room_types[room_json.name[:-5]] = RoomType.fromDict(json.load(f))
+                                self.room_types[room_json.name[:-5]] = RoomType.fromDict(room_json.name[:-5], json.load(f))
                 elif file.name == "abilities":
                     print("Abilities is present.")
                     for ability_json in os.scandir(path + "/abilities"):
                         if ability_json.is_file() and ability_json.name[-5:] == ".json":
                             with open(ability_json.path, "r") as f:
-                                self.ability_types[ability_json.name[:-5]] = AbilityType.fromDict(json.load(f))
+                                self.ability_types[ability_json.name[:-5]] = AbilityType.fromDict(ability_json.name[:-5], json.load(f))
 
     def swapEnable(self, index):
         key = list(self.__mods.keys())[index]
@@ -264,6 +264,10 @@ class Game:
 
     def inputDungeonExploration(self):
         command = input().split()
+        
+        if len(command) == 0:
+            return
+        
         command_key = command[0]
 
         if command_key == "saves":

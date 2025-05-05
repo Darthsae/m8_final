@@ -1,9 +1,33 @@
 {
   "name": "simple",
-  "effects": [],
+  "effects": [
+    {
+      "type": "add_entities",
+      "entities": [
+        {
+          "weight": 10,
+          "type": "lich",
+          "name": "Ry'Ga",
+          "description": "",
+          "tags": [],
+          "components": [],
+          "actions": [],
+          "classes": [
+            {
+              "class": "necromancer",
+              "level": 6
+            }
+          ]
+        }
+      ],
+      "amount": 1
+    }
+  ],
   "conditions": [],
   "restrictions": {
-    "required": [],
+    "required": [
+      "mini_boss_room"
+    ],
     "allowed": [],
     "excluded": []
   }
