@@ -1,6 +1,7 @@
 from .classes import ClassInstance
 from .components import componentFromData
 from .util import DoubleValue
+from .ability import AbilityInstance
 
 class EntityType:
     def __init__(self, name, description, tags, hp, xp):
@@ -51,18 +52,18 @@ class EntityInstance:
             else:
                 self.data[key] = (value[0], value[1] - 1)
     
-    def gainClassLevel(self, class_type):
+    def gainClassLevel(self, class_type, ability_types):
         for class_instance in self.__classes:
             if class_instance.getType() == class_type:
                 level = class_instance.level + 1
                 if level == class_type.maxLevel():
                     return
                 else:
-                    class_type.level_data[level].applyTo(self)
+                    class_type.level_data[level].applyTo(self, ability_types)
                     class_instance.level += 1
                     return
         class_instance = ClassInstance(class_type, 0)
-        class_type.level_data[0].applyTo(self)
+        class_type.level_data[0].applyTo(self, ability_types)
         self.__classes.append(class_instance)
 
     def changeHP(self, amount, respect_cap):
@@ -73,6 +74,9 @@ class EntityInstance:
         if self.hp == 0:
             ...
     
+    def addAction(self, action_type):
+        self.actions.append(AbilityInstance(action_type))
+
     def flee(self):
         ...
 

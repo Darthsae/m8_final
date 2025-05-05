@@ -1,6 +1,7 @@
 {
   "name": "Chest",
   "description": "A simple wooden chest.",
+  "tags": [],
   "interactions": [],
   "data": {}
 }

@@ -4,11 +4,13 @@ class LevelDetail:
         self.features = features
         self.abilities = abilities
     
-    def applyTo(self, apply_to):
+    def applyTo(self, apply_to, ability_types):
         for feature in self.features:
             ...
         for ability in self.abilities:
-            ...
+            behavior = ability["type"]
+            if behavior == "add":
+                apply_to.addAction(ability_types[ability["ability"]])
     
     @classmethod
     def fromDict(cls, data):

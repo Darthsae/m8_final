@@ -1,10 +1,14 @@
 class Interactable:
-    def __init__(self):
-        ...
+    def __init__(self, name, description, tags, data):
+        self.name = name
+        self.description = description
+        self.tags = tags
+        self.uses = []
+        self.data = data
 
     @classmethod
     def fromDict(cls, data):
-        interactable = cls()
+        interactable = cls(data["name"], data["descriptions"], data["tags"], data["data"])
         return interactable
     
     def toDict(self):
