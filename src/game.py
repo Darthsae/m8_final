@@ -1,6 +1,6 @@
 from .entity import EntityInstance, EntityType
 from .faction import Faction
-from .map import Map, RoomType
+from .map import Map, RoomType, RoomPool, SpawnPool
 from .util import intput
 from .menu import MenuType, MenuInstance
 from .components import Inventory
@@ -78,14 +78,12 @@ def remapAndCallback(remap_function, callback):
     return toReturn
 #endregion
 
-
 class Game:
     def __init__(self):
         self.player = EntityInstance(EntityInstance.NULL_ENTITY_TYPE)
         self.__mods = {}
         self.factions = {"player": Faction("Player", [])}
         self.entity_types = {}
-        self.room_types = {}
         self.item_types = {}
         self.class_types = {}
         self.ability_types = {}
@@ -168,6 +166,7 @@ class Game:
         self.player.hp = 100
         self.player.components.append(Inventory(12))
         self.player.gainClassLevel(self.class_types[self.popDataFromCache("character_class")()], self.ability_types)
+        self.map.setRoom(0, 0, "starting_room")
 
     def mods(self):
         return self.__mods
@@ -195,7 +194,7 @@ class Game:
     
     def loadMod(self, path):
         for file in os.scandir(path):
-            if file.is_dir and file.name in ["classes", "entities", "items", "rooms", "abilities"]:
+            if file.is_dir and file.name in ["classes", "entities", "items", "rooms", "abilities", "spawn_pools", "room_pools"]:
                 if file.name == "classes":
                     print("Classes is present.")
                     for class_json in os.scandir(path + "/classes"):
@@ -219,13 +218,25 @@ class Game:
                     for room_json in os.scandir(path + "/rooms"):
                         if room_json.is_file() and room_json.name[-5:] == ".json":
                             with open(room_json.path, "r") as f:
-                                self.room_types[room_json.name[:-5]] = RoomType.fromDict(room_json.name[:-5], json.load(f))
+                                self.map.room_types[room_json.name[:-5]] = RoomType.fromDict(room_json.name[:-5], json.load(f))
                 elif file.name == "abilities":
                     print("Abilities is present.")
                     for ability_json in os.scandir(path + "/abilities"):
                         if ability_json.is_file() and ability_json.name[-5:] == ".json":
                             with open(ability_json.path, "r") as f:
                                 self.ability_types[ability_json.name[:-5]] = AbilityType.fromDict(ability_json.name[:-5], json.load(f))
+                elif file.name == "room_pools":
+                    print("Room Pools is present.")
+                    for room_pool_json in os.scandir(path + "/room_pools"):
+                        if room_pool_json.is_file() and room_pool_json.name[-5:] == ".json":
+                            with open(room_pool_json.path, "r") as f:
+                                self.map.addRoomPool(RoomPool.fromDict(room_pool_json.name[:-5], json.load(f)))
+                elif file.name == "spawn_pools":
+                    print("Spawn Pools is present.")
+                    for spawn_pool_json in os.scandir(path + "/spawn_pools"):
+                        if spawn_pool_json.is_file() and spawn_pool_json.name[-5:] == ".json":
+                            with open(spawn_pool_json.path, "r") as f:
+                                self.map.spawn_pool_types[spawn_pool_json.name[:-5]] = SpawnPool.fromDict(spawn_pool_json.name[:-5], json.load(f))
 
     def swapEnable(self, index):
         key = list(self.__mods.keys())[index]
@@ -253,7 +264,7 @@ class Game:
     
     def clearData(self):
         self.player = EntityInstance(EntityInstance.NULL_ENTITY_TYPE)
-        self.map = Map()
+        self.map.reset()
 
     def popMenu(self):
         self.menu_stack.pop()

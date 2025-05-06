@@ -49,6 +49,12 @@ def parse(data):
         target = data["target"]
         def toReturn(targets):
             return min <= targets[target].roomPoolCount(room_pool) <= max
+    elif data_type == "add_entities":
+        entities = data["entities"]
+        amount = data["max"]
+        target = data["target"]
+        def toReturn(targets):
+            ...
     
     return toReturn
 

@@ -55,14 +55,31 @@ class RoomPool:
         room = map.room_types[random.choice(self.rooms)]
 
         # This is where spawn pools will be applied.
+        for spawn_pool in map.spawn_pool_types:
+            ...
 
         return room
 
     @classmethod
     def fromDict(cls, id, data):
-        room_pool = cls(data["id"], data["name"], data["rooms"], data["tags"], Restrictions.fromDict(data["restrictions"]))
+        room_pool = cls(id, data["name"], data["rooms"], data["tags"], Restrictions.fromDict(data["restrictions"]))
         room_pool.conditions = [parse(condition) for condition in data["conditions"]]
         return room_pool
+
+class SpawnPool:
+    def __init__(self, id, name, restrictions):
+        self.id = id
+        self.name = name
+        self.effects = []
+        self.conditions = []
+        self.restrictions = restrictions
+    
+    @classmethod
+    def fromDict(cls, id, data):
+        spawn_pool = cls(id, data["name"], Restrictions.fromDict(data["restrictions"]))
+        spawn_pool.effects = [parse(effect) for effect in data["effects"]]
+        spawn_pool.conditions = [parse(condition) for condition in data["conditions"]]
+        return spawn_pool
 
 class RoomInstance:
     def __init__(self, room_type):
@@ -133,6 +150,11 @@ class Map:
 
     def getRooms(self):
         return self.__rooms
+    
+    def reset(self):
+        self.__rooms = {}
+        for key in self.room_pool_types:
+            self.room_pool_types[key] = (self.room_pool_types[key][0], 0)
 
     @classmethod
     def fromDict(cls, data):
