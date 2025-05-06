@@ -1,6 +1,7 @@
+from .util import indexOfIndexable
 import random
 
-def parse(data):
+def parse(data, game):
     data_type = data["type"]
 
     if data_type == "change_hp":
@@ -41,7 +42,7 @@ def parse(data):
         position = parseValue(data["position"])
         target = data["target"]
         def toReturn(targets):
-            return min <= targets[target].roomChain(position, room_pool) <= max
+            return min <= targets[target].roomChain(position(targets), room_pool) <= max
     elif data_type == "room_pool_count":
         room_pool = data["room_pool"]
         min = data["min"]
@@ -50,16 +51,22 @@ def parse(data):
         def toReturn(targets):
             return min <= targets[target].roomPoolCount(room_pool) <= max
     elif data_type == "add_entities":
-        entities = data["entities"]
-        amount = data["max"]
+        entities = [parseEntityEntry(entity_data, game) for entity_data in data["entities"]]
+        cap = sum(map(indexOfIndexable(0), entities))
+        amount = data["amount"]
         target = data["target"]
         def toReturn(targets):
-            ...
-    
+            temp = random.random() * cap
+            for weight, entity_function in entities:
+                temp -= weight
+                if temp <= 0:
+                    for _ in range(amount):
+                        targets[target].addEntity(entity_function())
+                    return
     return toReturn
 
 def parseValue(data):
-    if data is dict and "type" in data:
+    if isinstance(data, dict) and "type" in data:
         data_type = data["type"]
         if data_type == "target":
             target = data["target"]
@@ -73,3 +80,40 @@ def parseValue(data):
             return data
 
     return toReturn
+
+def parseEntityEntry(data, game):
+    weight = data["weight"]
+    entity_type = game.entity_types[data["type"]]
+    overrides = data["overrides"]
+    
+    from .entity import EntityInstance
+    from .components import componentFromData
+    def createEntity():
+        entity = EntityInstance(entity_type)
+        if "name" in overrides:
+            entity.name = overrides["name"]
+        if "description" in overrides:
+            entity.description = overrides["description"]
+        if "tags" in overrides:
+            for tag in overrides["tags"]:
+                tag_type = tag["type"]
+                value = tag["value"]
+                if tag_type == "add":
+                    if not value in entity.tags:
+                        entity.tags.append(value)
+                elif tag_type == "remove":
+                    if value in entity.tags:
+                        entity.tags.remove(value)
+        if "components" in overrides:
+            entity.components.extend([componentFromData(component_data) for component_data in overrides["components"]])
+        if "actions" in overrides:
+            ...
+        if "classes" in overrides:
+            for class_data in overrides["classes"]:
+                class_type = game.class_types[class_data["class"]]
+                for _ in range(class_data["level"]):
+                    entity.gainClassLevel(class_type, game.ability_types)
+        
+        return entity
+    
+    return weight, createEntity

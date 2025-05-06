@@ -47,7 +47,7 @@ class Restrictions:
     
     def score(self, tags):
         requirements = set(self.required)
-        score = 0
+        score = 1
         for tag in tags:
             if tag in self.excluded:
                 return 0
@@ -68,3 +68,8 @@ def adjacentPositions(position):
         (position[0]    , position[1] + 1),
         (position[0]    , position[1] - 1)
     ]
+
+def indexOfIndexable(index):
+    def toReturn(indexable):
+        return indexable[index]
+    return toReturn

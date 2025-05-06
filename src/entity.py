@@ -39,13 +39,16 @@ class EntityInstance:
         self.speed = self.__entity_type.speed
         self.data = {}
 
+    def getDescription(self):
+        return " ".join(["There is a", self.name, "in the room."])
+
     def getClassesDisplayString(self):
         string = ""
         for class_data in self.__classes:
             string += class_data.getType().name + " " + str(class_data.level) + "\n"
         return string
     
-    def update(self):
+    def update(self, game):
         for key in self.data:
             value = self.data.pop(key)
             if value[1] == 0:
@@ -54,6 +57,8 @@ class EntityInstance:
                 self.data[key] = value
             else:
                 self.data[key] = (value[0], value[1] - 1)
+        for component in self.components:
+            component.update(game, self)
     
     def gainClassLevel(self, class_type, ability_types):
         for class_instance in self.__classes:

@@ -1,0 +1,16 @@
+{
+  "name": "empty_spawn_pool",
+  "effects": [],
+  "conditions": [],
+  "restrictions": {
+    "required": [],
+    "allowed": [
+      "starting_room",
+      "connecting_room",
+      "no_hostile_entities"
+    ],
+    "excluded": [
+      "mini_boss_room"
+    ]
+  }
+}

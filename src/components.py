@@ -4,6 +4,9 @@ class Component:
     def __init__(self):
         pass
 
+    def update(self, game, entity):
+        pass
+
     @classmethod
     def fromDict(cls, data):
         return cls(**data)
@@ -43,6 +46,18 @@ class Inventory(Component):
 
 class AI(Component):
     def __init__(self):
+        ...
+    
+    def evaluateOpponents(self, opponents):
+        ...
+    
+    def evaluateOptions(self, entity):
+        ...
+    
+    def update(self, game, entity):
+        player = game.player
+
+    def battle(self, entity, opponents):
         ...
         
     @classmethod

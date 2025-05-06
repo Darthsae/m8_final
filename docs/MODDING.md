@@ -28,7 +28,8 @@ Entities use the following structure:
     "Tags"
   ],
   "hp": 24,
-  "xp": 5
+  "xp": 5,
+  "speed": 50
 }
 ```
 

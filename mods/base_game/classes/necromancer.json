@@ -13,9 +13,59 @@
         "abilities": [
           {
             "type": "add",
-            "ability": "escape_rope"
+            "ability": "death_bolt"
           }
         ]
+      },
+      {
+        "xp_cost": 15,
+        "features": [
+          {
+            "type": "change_max_hp",
+            "amount": 15
+          }
+        ],
+        "abilities": []
+      },
+      {
+        "xp_cost": 20,
+        "features": [
+          {
+            "type": "change_max_hp",
+            "amount": 15
+          }
+        ],
+        "abilities": []
+      },
+      {
+        "xp_cost": 25,
+        "features": [
+          {
+            "type": "change_max_hp",
+            "amount": 15
+          }
+        ],
+        "abilities": []
+      },
+      {
+        "xp_cost": 35,
+        "features": [
+          {
+            "type": "change_max_hp",
+            "amount": 15
+          }
+        ],
+        "abilities": []
+      },
+      {
+        "xp_cost": 40,
+        "features": [
+          {
+            "type": "change_max_hp",
+            "amount": 15
+          }
+        ],
+        "abilities": []
       },
       {
         "xp_cost": 50,
@@ -25,12 +75,7 @@
             "amount": 15
           }
         ],
-        "abilities": [
-          {
-            "type": "add",
-            "ability": "taunt"
-          }
-        ]
+        "abilities": []
       }
     ]
   }

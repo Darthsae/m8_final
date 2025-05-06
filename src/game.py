@@ -97,6 +97,8 @@ class Game:
         self.addMenu("main_menu")()
 
         self.getMods()
+        self.player_x = 0
+        self.player_y = 0
 
     def rebuildMenus(self):
         self.menus = {
@@ -224,19 +226,19 @@ class Game:
                     for ability_json in os.scandir(path + "/abilities"):
                         if ability_json.is_file() and ability_json.name[-5:] == ".json":
                             with open(ability_json.path, "r") as f:
-                                self.ability_types[ability_json.name[:-5]] = AbilityType.fromDict(ability_json.name[:-5], json.load(f))
+                                self.ability_types[ability_json.name[:-5]] = AbilityType.fromDict(self, ability_json.name[:-5], json.load(f))
                 elif file.name == "room_pools":
                     print("Room Pools is present.")
                     for room_pool_json in os.scandir(path + "/room_pools"):
                         if room_pool_json.is_file() and room_pool_json.name[-5:] == ".json":
                             with open(room_pool_json.path, "r") as f:
-                                self.map.addRoomPool(RoomPool.fromDict(room_pool_json.name[:-5], json.load(f)))
+                                self.map.addRoomPool(RoomPool.fromDict(self, room_pool_json.name[:-5], json.load(f)))
                 elif file.name == "spawn_pools":
                     print("Spawn Pools is present.")
                     for spawn_pool_json in os.scandir(path + "/spawn_pools"):
                         if spawn_pool_json.is_file() and spawn_pool_json.name[-5:] == ".json":
                             with open(spawn_pool_json.path, "r") as f:
-                                self.map.spawn_pool_types[spawn_pool_json.name[:-5]] = SpawnPool.fromDict(spawn_pool_json.name[:-5], json.load(f))
+                                self.map.spawn_pool_types[spawn_pool_json.name[:-5]] = SpawnPool.fromDict(self, spawn_pool_json.name[:-5], json.load(f))
 
     def swapEnable(self, index):
         key = list(self.__mods.keys())[index]
@@ -286,6 +288,36 @@ class Game:
         elif command_key == "quit":
             self.popMenu()
             self.clearData()
+        elif command_key == "look":
+            room = self.map.getRoom(self.player_x, self.player_y)
+            print(room.getDescription())
+        elif command_key == "interact":
+            room = self.map.getRoom(self.player_x, self.player_y)
+            if len(command) < 2:
+                print("You need to add what to interact with.")
+            interaction = command[1]
+            for interactable in room.interactables:
+                if interactable.name == interaction:
+                    print()
+        elif command_key == "move":
+            room = self.map.getRoom(self.player_x, self.player_y)
+            if len(command) < 2:
+                print("Add a direction to move in.")    
+            direction = command[1]
+            if direction == "north":
+                self.player_y += 1
+            elif direction == "south":
+                self.player_y -= 1
+            elif direction == "east":
+                self.player_x += 1
+            elif direction == "west":
+                self.player_x -= 1
+            room = self.map.getRoom(self.player_x, self.player_y)
+            print(room.getDescription())
+        
+        room = self.map.getRoom(self.player_x, self.player_y)
+        room.update(self)
+            
     
     @classmethod
     def fromDict(cls, data):

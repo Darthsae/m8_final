@@ -1,14 +1,14 @@
 {
-  "name": "connecting_room",
+  "name": "mini_boss_room",
   "rooms": [
-    "hall"
+    "inner_sanctum"
   ],
   "tags": [],
   "conditions": [
     {
       "type": "room_chain",
       "room_pool": "connecting_room",
-      "min": 0,
+      "min": 2,
       "max": 4,
       "position": {
         "type": "target",
@@ -18,11 +18,12 @@
     }
   ],
   "restrictions": {
-    "required": [],
-    "allowed": [
-      "starting_room", 
+    "required": [
       "connecting_room"
     ],
-    "excluded": []
+    "allowed": [],
+    "excluded": [
+      "starting_room"
+    ]
   }
 }

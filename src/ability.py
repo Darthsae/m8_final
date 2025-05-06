@@ -1,17 +1,17 @@
 from .script_parsing import parse
 
 class AbilityType:
-    def __init__(self, id, name, description, effects, targets, requirements):
+    def __init__(self, game, id, name, description, effects, targets, requirements):
         self.id = id
         self.name = name
         self.description = description
-        self.effects = [parse(effect) for effect in effects]
+        self.effects = [parse(effect, game) for effect in effects]
         self.targets = targets
-        self.requirements = [parse(requirement) for requirement in requirements]
+        self.requirements = [parse(requirement, game) for requirement in requirements]
 
     @classmethod
-    def fromDict(cls, id, data):
-        ability = cls(id, data["name"], data["description"], data["effects"], data["targets"], data["requirements"])
+    def fromDict(cls, game, id, data):
+        ability = cls(game, id, data["name"], data["description"], data["effects"], data["targets"], data["requirements"])
         return ability
 
 class AbilityInstance:
