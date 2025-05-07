@@ -119,7 +119,7 @@ class RoomInstance:
 
     def update(self, game):
         for entity in self.entities:
-            entity.update(game)
+            entity.update(game, self)
 
     @classmethod
     def fromDict(cls, data, room_types):

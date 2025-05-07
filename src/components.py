@@ -4,7 +4,10 @@ class Component:
     def __init__(self):
         pass
 
-    def update(self, game, entity):
+    def update(self, game, room, entity):
+        pass
+
+    def battle(self, game, battle, entity, opponents):
         pass
 
     @classmethod
@@ -54,11 +57,22 @@ class AI(Component):
     def evaluateOptions(self, entity):
         ...
     
-    def update(self, game, entity):
-        player = game.player
+    def update(self, game, room, entity):
+        in_battle = entity.hasData("in_battle")
+        if not in_battle:
+            entities_in_room = (set(room.entities) - {entity}) | {game.player}
+            hostile = [entity_room for entity_room in entities_in_room if entity.isHostile(game, entity_room)]
+            if len(hostile) > 0:
+                id = game.battle_manager.startBattle(room)
+                game.battle_manager.joinBattle(entity, id)
+                for hostile_creature in hostile:
+                    game.battle_manager.joinBattle(hostile_creature, id)
 
-    def battle(self, entity, opponents):
-        ...
+    def battle(self, game, battle, entity, participants):
+        opponents = [participant for participant in participants if entity.isHostile(game, participant)]
+        allies = list(set(participants) - set(opponents))
+        if len(opponents) == 0:
+            game.battle_manager.leaveBattle(entity, battle.id)
         
     @classmethod
     def fromDict(cls, data):

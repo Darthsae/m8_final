@@ -73,3 +73,6 @@ def indexOfIndexable(index):
     def toReturn(indexable):
         return indexable[index]
     return toReturn
+
+def longToString(long):
+    return chr(long >> 56 & 0xFF) + chr(long >> 48 & 0xFF) + chr(long >> 40 & 0xFF) + chr(long >> 32 & 0xFF) + chr(long >> 24 & 0xFF) + chr(long >> 16 & 0xFF) + chr(long >> 8 & 0xFF) + chr(long & 0xFF)

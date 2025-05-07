@@ -7,6 +7,7 @@ from .components import Inventory
 from .classes import ClassType
 from .item import ItemType
 from .ability import AbilityType
+from .battle import BattleManager
 import os, json
 
 #region Menu Callbacks
@@ -82,12 +83,13 @@ class Game:
     def __init__(self):
         self.player = EntityInstance(EntityInstance.NULL_ENTITY_TYPE)
         self.__mods = {}
-        self.factions = {"player": Faction("Player", [])}
+        self.factions = {"player": Faction("player", "Player", [])}
         self.entity_types = {}
         self.item_types = {}
         self.class_types = {}
         self.ability_types = {}
         self.map = Map()
+        self.battle_manager = BattleManager()
         self.menu_stack = []
         self.menu_cache = {}
         
@@ -159,6 +161,10 @@ class Game:
             "dungeon_exploration": MenuType(
                 self.displayDungeonExploration,
                 self.inputDungeonExploration
+            ),
+            "dungeon_combat": MenuType(
+                print,
+                input
             )
         }
 
@@ -196,7 +202,7 @@ class Game:
     
     def loadMod(self, path):
         for file in os.scandir(path):
-            if file.is_dir and file.name in ["classes", "entities", "items", "rooms", "abilities", "spawn_pools", "room_pools"]:
+            if file.is_dir and file.name in ["classes", "entities", "items", "rooms", "abilities", "spawn_pools", "room_pools", "factions"]:
                 if file.name == "classes":
                     print("Classes is present.")
                     for class_json in os.scandir(path + "/classes"):
@@ -233,6 +239,12 @@ class Game:
                         if room_pool_json.is_file() and room_pool_json.name[-5:] == ".json":
                             with open(room_pool_json.path, "r") as f:
                                 self.map.addRoomPool(RoomPool.fromDict(self, room_pool_json.name[:-5], json.load(f)))
+                elif file.name == "factions":
+                    print("Factions is present.")
+                    for faction_json in os.scandir(path + "/factions"):
+                        if faction_json.is_file() and faction_json.name[-5:] == ".json":
+                            with open(faction_json.path, "r") as f:
+                                self.factions[faction_json.name[:-5]] = (Faction.fromDict(faction_json.name[:-5], json.load(f)))
                 elif file.name == "spawn_pools":
                     print("Spawn Pools is present.")
                     for spawn_pool_json in os.scandir(path + "/spawn_pools"):

@@ -1,6 +1,5 @@
 from .classes import ClassInstance
 from .components import componentFromData
-from .util import DoubleValue
 from .ability import AbilityInstance
 
 class EntityType:
@@ -19,7 +18,6 @@ class EntityType:
     @classmethod
     def fromDict(cls, id, data):
         entity_type = cls(id, data["name"], data["description"], data["tags"], data["hp"], data["xp"], data["speed"])
-
         return entity_type
 
 class EntityInstance:
@@ -37,6 +35,7 @@ class EntityInstance:
         self.__classes = []
         self.xp = self.__entity_type.xp
         self.speed = self.__entity_type.speed
+        self.faction = ""
         self.data = {}
 
     def getDescription(self):
@@ -48,7 +47,19 @@ class EntityInstance:
             string += class_data.getType().name + " " + str(class_data.level) + "\n"
         return string
     
-    def update(self, game):
+    def hasFaction(self):
+        return self.faction != ""
+    
+    def getFaction(self, game):
+        return game.factions[self.faction]
+    
+    def isHostile(self, game, target):
+        if self.hasFaction() and target.hasFaction():
+            return target.faction in self.getFaction(game).hostile
+        else:
+            return False
+    
+    def update(self, game, room):
         for key in self.data:
             value = self.data.pop(key)
             if value[1] == 0:
@@ -58,7 +69,11 @@ class EntityInstance:
             else:
                 self.data[key] = (value[0], value[1] - 1)
         for component in self.components:
-            component.update(game, self)
+            component.update(game, room, self)
+
+    def battleUpdate(self, game, battle, opponents):
+        for component in self.components:
+            component.battle(game, battle, self, opponents)
     
     def gainClassLevel(self, class_type, ability_types):
         for class_instance in self.__classes:
@@ -80,7 +95,7 @@ class EntityInstance:
         if respect_cap:
             self.hp = min(self.hp, pre_hp)
         if self.hp == 0:
-            ...
+            del self
     
     def addAction(self, action_type):
         self.actions.append(AbilityInstance(action_type))
@@ -93,9 +108,15 @@ class EntityInstance:
     
     def hasData(self, key):
         return key in self.data
+    
+    def getData(self, key):
+        return self.data[key]
 
     def addData(self, key, value, decay):
         self.data[key] = (value, decay)
+    
+    def removeData(self, key):
+        self.data.pop(key)
     
     @classmethod
     def fromDict(cls, data, entity_types):
@@ -116,6 +137,8 @@ class EntityInstance:
             entity.components = [componentFromData(component_data) for component_data in data["components"]]
         if "classes" in data:
             entity.__classes = [ClassInstance.fromDict(class_data) for class_data in data["classes"]]
+        if "faction" in data:
+            entity.faction = data["faction"]
         if "data" in data:
             entity.data = data["data"]
         return entity
@@ -131,5 +154,6 @@ class EntityInstance:
             "speed": self.speed,
             "components": [component_data.toDict() for component_data in self.components],
             "classes": [class_data.toDict() for class_data in self.__classes],
+            "faction": self.faction,
             "data": self.data
         }

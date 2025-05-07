@@ -113,7 +113,8 @@ def parseEntityEntry(data, game):
                 class_type = game.class_types[class_data["class"]]
                 for _ in range(class_data["level"]):
                     entity.gainClassLevel(class_type, game.ability_types)
-        
+        if "faction" in overrides:
+            entity.faction = overrides["faction"]
         return entity
     
     return weight, createEntity
