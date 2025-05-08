@@ -1,6 +1,7 @@
 from .util import indexOfIndexable
 import random
 
+
 def parse(data, game):
     data_type = data["type"]
 
@@ -8,23 +9,31 @@ def parse(data, game):
         respect_cap = data["respect_cap"]
         target = data["target"]
         amount = data["amount"]
+
         def toReturn(targets):
             targets[target].changeHP(amount, respect_cap)
     elif data_type == "check_data":
         present = data["present"]
         key = data["data"]
         target = data["target"]
+
         def toReturn(targets):
-            return targets[target].hasData(key) if present else not targets[target].hasData(key)
+            return (
+                targets[target].hasData(key)
+                if present
+                else not targets[target].hasData(key)
+            )
     elif data_type == "add_data":
         decay = data["decay"]
         key = data["data"]
         value = parseValue(data["value"])
         target = data["target"]
+
         def toReturn(targets):
             targets[target].addData(key, value(targets), decay)
     elif data_type == "flee":
         target = data["target"]
+
         def toReturn(targets):
             targets[target].flee()
     elif data_type == "change_room":
@@ -33,14 +42,18 @@ def parse(data, game):
         y_min = data["y_min"]
         y_max = data["y_max"]
         target = data["target"]
+
         def toReturn(targets):
-            targets[target].changeRoom(random.randint(x_min, x_max), random.randint(y_min, y_max))
+            targets[target].changeRoom(
+                random.randint(x_min, x_max), random.randint(y_min, y_max)
+            )
     elif data_type == "room_chain":
         room_pool = data["room_pool"]
         min = data["min"]
         max = data["max"]
         position = parseValue(data["position"])
         target = data["target"]
+
         def toReturn(targets):
             return min <= targets[target].roomChain(position(targets), room_pool) <= max
     elif data_type == "room_pool_count":
@@ -48,13 +61,17 @@ def parse(data, game):
         min = data["min"]
         max = data["max"]
         target = data["target"]
+
         def toReturn(targets):
             return min <= targets[target].roomPoolCount(room_pool) <= max
     elif data_type == "add_entities":
-        entities = [parseEntityEntry(entity_data, game) for entity_data in data["entities"]]
+        entities = [
+            parseEntityEntry(entity_data, game) for entity_data in data["entities"]
+        ]
         cap = sum(map(indexOfIndexable(0), entities))
         amount = data["amount"]
         target = data["target"]
+
         def toReturn(targets):
             temp = random.random() * cap
             for weight, entity_function in entities:
@@ -63,33 +80,47 @@ def parse(data, game):
                     for _ in range(amount):
                         targets[target].addEntity(entity_function())
                     return
+    if data_type == "change_max_hp":
+        target = data["target"]
+        amount = data["amount"]
+
+        def toReturn(targets):
+            targets[target].max_hp += amount
+            targets[target].hp += amount
+
     return toReturn
+
 
 def parseValue(data):
     if isinstance(data, dict) and "type" in data:
         data_type = data["type"]
         if data_type == "target":
             target = data["target"]
+
             def toReturn(targets):
                 return targets[target]
         else:
+
             def toReturn(targets):
                 return data
     else:
+
         def toReturn(targets):
             return data
 
     return toReturn
 
+
 def parseEntityEntry(data, game):
     weight = data["weight"]
     entity_type = game.entity_types[data["type"]]
     overrides = data["overrides"]
-    
+
     from .entity import EntityInstance
     from .components import componentFromData
+
     def createEntity():
-        entity = EntityInstance(entity_type)
+        entity = EntityInstance(game, entity_type)
         if "name" in overrides:
             entity.name = overrides["name"]
         if "description" in overrides:
@@ -99,13 +130,18 @@ def parseEntityEntry(data, game):
                 tag_type = tag["type"]
                 value = tag["value"]
                 if tag_type == "add":
-                    if not value in entity.tags:
+                    if value not in entity.tags:
                         entity.tags.append(value)
                 elif tag_type == "remove":
                     if value in entity.tags:
                         entity.tags.remove(value)
         if "components" in overrides:
-            entity.components.extend([componentFromData(component_data) for component_data in overrides["components"]])
+            entity.components.extend(
+                [
+                    componentFromData(component_data)
+                    for component_data in overrides["components"]
+                ]
+            )
         if "actions" in overrides:
             ...
         if "classes" in overrides:
@@ -116,5 +152,5 @@ def parseEntityEntry(data, game):
         if "faction" in overrides:
             entity.faction = overrides["faction"]
         return entity
-    
+
     return weight, createEntity

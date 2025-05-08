@@ -23,7 +23,7 @@ class BattleManager:
     def updateBattles(self, game):
         to_nuke = set()
         for key, battle in self.battles.items():
-            battle.runUpdate(game)
+            battle.runUpdate()
 
             if battle.isOver():
                 to_nuke.add(key)
@@ -38,13 +38,13 @@ class BattleInstance:
         self.room = room
         self.participants = []
     
-    def runUpdate(self, game):
+    def runUpdate(self):
         def idk(entity):
             return entity.speed
         organized_participants = sorted(self.participants, key=idk, reverse=True)
         for participant in organized_participants:
             if participant in self.participants:
-                participant.battleUpdate(game, self.room, [participant_thing for participant_thing in self.participants if not participant_thing is participant])
+                participant.battleUpdate(self.room, [participant_thing for participant_thing in self.participants if not participant_thing is participant])
     
     def isOver(self):
         return len(self.participants) == 0

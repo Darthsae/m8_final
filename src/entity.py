@@ -2,6 +2,7 @@ from .classes import ClassInstance
 from .components import componentFromData
 from .ability import AbilityInstance
 
+
 class EntityType:
     def __init__(self, id, name, description, tags, hp, xp, speed):
         self.id = id
@@ -14,16 +15,26 @@ class EntityType:
         self.classes = []
         self.xp = xp
         self.speed = speed
-        
+
     @classmethod
     def fromDict(cls, id, data):
-        entity_type = cls(id, data["name"], data["description"], data["tags"], data["hp"], data["xp"], data["speed"])
+        entity_type = cls(
+            id,
+            data["name"],
+            data["description"],
+            data["tags"],
+            data["hp"],
+            data["xp"],
+            data["speed"],
+        )
         return entity_type
+
 
 class EntityInstance:
     NULL_ENTITY_TYPE = EntityType("", "", "", [], 1, 0, 0)
 
-    def __init__(self, entity_type):
+    def __init__(self, game, entity_type):
+        self.game = game
         self.__entity_type = entity_type
         self.name = self.__entity_type.name
         self.description = self.__entity_type.description
@@ -44,22 +55,26 @@ class EntityInstance:
     def getClassesDisplayString(self):
         string = ""
         for class_data in self.__classes:
-            string += class_data.getType().name + " " + str(class_data.level) + "\n"
+            string += class_data.getType().name + " " + str(class_data.level + 1) + "\n"
         return string
     
+    def getClassesLineString(self):
+        string = ", ".join([f"{class_data.getType().name} {class_data.level + 1}" for class_data in self.__classes])
+        return string
+
     def hasFaction(self):
         return self.faction != ""
-    
-    def getFaction(self, game):
-        return game.factions[self.faction]
-    
-    def isHostile(self, game, target):
+
+    def getFaction(self):
+        return self.game.factions[self.faction]
+
+    def isHostile(self, target):
         if self.hasFaction() and target.hasFaction():
-            return target.faction in self.getFaction(game).hostile
+            return target.faction in self.getFaction().hostile
         else:
             return False
-    
-    def update(self, game, room):
+
+    def update(self, room):
         for key in self.data:
             value = self.data.pop(key)
             if value[1] == 0:
@@ -69,12 +84,12 @@ class EntityInstance:
             else:
                 self.data[key] = (value[0], value[1] - 1)
         for component in self.components:
-            component.update(game, room, self)
+            component.update(room, self)
 
-    def battleUpdate(self, game, battle, opponents):
+    def battleUpdate(self, battle, opponents):
         for component in self.components:
-            component.battle(game, battle, self, opponents)
-    
+            component.battle(battle, self, opponents)
+
     def gainClassLevel(self, class_type, ability_types):
         for class_instance in self.__classes:
             if class_instance.getType() == class_type:
@@ -96,28 +111,34 @@ class EntityInstance:
             self.hp = min(self.hp, pre_hp)
         if self.hp == 0:
             del self
-    
+
     def addAction(self, action_type):
         self.actions.append(AbilityInstance(action_type))
 
-    def flee(self):
-        ...
+    def flee(self): ...
 
-    def changeRoom(self, x, y):
-        ...
-    
+    def changeRoom(self, x, y): ...
+
     def hasData(self, key):
         return key in self.data
-    
+
     def getData(self, key):
-        return self.data[key]
+        return self.data[key][0]
 
     def addData(self, key, value, decay):
         self.data[key] = (value, decay)
-    
+
     def removeData(self, key):
         self.data.pop(key)
-    
+
+    def detailedBattleDescription(self):
+        to_return = f"{self.name} ({self.faction}) - {self.getClassesLineString()}\n"
+        to_return += f"HP: {self.hp}/{self.max_hp}\n"
+        to_return += f"XP: {self.xp}\n"
+        to_return += f"SPEED: {self.speed}\n"
+        to_return += self.description
+        return to_return
+
     @classmethod
     def fromDict(cls, data, entity_types):
         entity = cls(entity_types[data["type"]])
@@ -134,15 +155,20 @@ class EntityInstance:
         if "speed" in data:
             entity.speed = data["speed"]
         if "components" in data:
-            entity.components = [componentFromData(component_data) for component_data in data["components"]]
+            entity.components = [
+                componentFromData(component_data)
+                for component_data in data["components"]
+            ]
         if "classes" in data:
-            entity.__classes = [ClassInstance.fromDict(class_data) for class_data in data["classes"]]
+            entity.__classes = [
+                ClassInstance.fromDict(class_data) for class_data in data["classes"]
+            ]
         if "faction" in data:
             entity.faction = data["faction"]
         if "data" in data:
             entity.data = data["data"]
         return entity
-    
+
     def toDict(self):
         return {
             "type": self.__entity_type.id,
@@ -152,8 +178,11 @@ class EntityInstance:
             "hp": self.hp,
             "xp": self.xp,
             "speed": self.speed,
-            "components": [component_data.toDict() for component_data in self.components],
+            "components": [
+                component_data.toDict() for component_data in self.components
+            ],
             "classes": [class_data.toDict() for class_data in self.__classes],
             "faction": self.faction,
-            "data": self.data
+            "data": self.data,
         }
+

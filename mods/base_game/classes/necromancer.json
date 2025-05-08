@@ -7,7 +7,8 @@
         "features": [
           {
             "type": "change_max_hp",
-            "amount": 15
+            "amount": 15,
+            "target": 0
           }
         ],
         "abilities": [
@@ -22,7 +23,8 @@
         "features": [
           {
             "type": "change_max_hp",
-            "amount": 15
+            "amount": 15,
+            "target": 0
           }
         ],
         "abilities": []
@@ -32,7 +34,8 @@
         "features": [
           {
             "type": "change_max_hp",
-            "amount": 15
+            "amount": 15,
+            "target": 0
           }
         ],
         "abilities": []
@@ -42,7 +45,8 @@
         "features": [
           {
             "type": "change_max_hp",
-            "amount": 15
+            "amount": 15,
+            "target": 0
           }
         ],
         "abilities": []
@@ -52,7 +56,8 @@
         "features": [
           {
             "type": "change_max_hp",
-            "amount": 15
+            "amount": 15,
+            "target": 0
           }
         ],
         "abilities": []
@@ -62,7 +67,8 @@
         "features": [
           {
             "type": "change_max_hp",
-            "amount": 15
+            "amount": 15,
+            "target": 0
           }
         ],
         "abilities": []
@@ -72,7 +78,8 @@
         "features": [
           {
             "type": "change_max_hp",
-            "amount": 15
+            "amount": 15,
+            "target": 0
           }
         ],
         "abilities": []

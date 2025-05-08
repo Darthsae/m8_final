@@ -1,20 +1,22 @@
+from .script_parsing import parse
+
 class LevelDetail:
-    def __init__(self, xp_cost, features, abilities):
+    def __init__(self, game, xp_cost, features, abilities):
         self.xp_cost = xp_cost
-        self.features = features
+        self.features = [parse(feature_data, game) for feature_data in features]
         self.abilities = abilities
     
     def applyTo(self, apply_to, ability_types):
         for feature in self.features:
-            ...
+            feature([apply_to])
         for ability in self.abilities:
             behavior = ability["type"]
             if behavior == "add":
                 apply_to.addAction(ability_types[ability["ability"]])
     
     @classmethod
-    def fromDict(cls, data):
-        level_detail = cls(data["xp_cost"], data["features"], data["abilities"])
+    def fromDict(cls, game, data):
+        level_detail = cls(game, data["xp_cost"], data["features"], data["abilities"])
 
         return level_detail
 
@@ -29,8 +31,8 @@ class ClassType:
         return len(self.level_data)
     
     @classmethod
-    def fromDict(cls, id, data):
-        class_type = cls(id, data["name"], data["description"], [LevelDetail.fromDict(level_data) for level_data in data["level_data"]])
+    def fromDict(cls, game, id, data):
+        class_type = cls(id, data["name"], data["description"], [LevelDetail.fromDict(game, level_data) for level_data in data["level_data"]])
         
         return class_type
     

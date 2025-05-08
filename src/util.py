@@ -18,7 +18,10 @@ def intput(prompt):
     Returns:
         int: value of input as int
     """
-    return int(input(prompt))
+    try:
+        return int(input(prompt))
+    except:
+        return intput(prompt)
 
 def boolput(prompt, case_sensitive, true_values):
     """Get a bool as input
