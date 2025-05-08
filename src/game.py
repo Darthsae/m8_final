@@ -8,6 +8,7 @@ from .classes import ClassType
 from .item import ItemType
 from .ability import AbilityType
 from .battle import BattleManager
+from .dummy import dummyFindActionType
 import os, json
 
 
@@ -223,6 +224,10 @@ class Game:
                 self.displayListItems, 
                 self.inputListItems
             ),
+            "target_select": MenuType(
+                self.displayTargets,
+                self.inputTargets
+            )
         }
 
     def createCharacter(self):
@@ -434,16 +439,69 @@ class Game:
         print(str(len(creatures) + 1) + ") Back")
 
     def inputListActions(self):
-        ...
+        actions = self.player.actions
+        choice = intput("Choice: ") - 1
+        print(f"0 <= {choice} < {len(actions)} - {0 <= choice < len(actions)}")
+        if choice == len(actions):
+            self.popMenu()
+        elif 0 <= choice < len(actions):
+            action = self.player.actions[choice]
+            action_type = dummyFindActionType(self.player, action)
+            if action_type == "self_heal":
+                action.apply([self.player])
+            elif action_type in ["other_heal", "other_damage"]:
+                self.saveDataToCache("ability_index")(choice)
+                self.addMenu("target_select")
+            else:
+                action.apply([self.player])
     
     def displayListActions(self):
-        ...
+        for i, action in enumerate(self.player.actions):
+            print(f"{i + 1}) {action}")
+        print(f"{len(self.player.actions) + 1}) Back")
 
     def inputListItems(self):
-        ...
+        index_of_inventory = 0
+        for i, component in enumerate(self.player.components):
+            if isinstance(component, Inventory):
+                index_of_inventory = i
+        
+        items = self.player.components[index_of_inventory].items
+        choice = intput("Choice: ") - 1
+        if choice == len(items):
+            self.popMenu()
+        elif 0 <= choice < len(items):
+            self.addMenu("target_select")
     
     def displayListItems(self):
-        ...
+        index_of_inventory = 0
+        for i, component in enumerate(self.player.components):
+            if isinstance(component, Inventory):
+                index_of_inventory = i
+        
+        for i, item in enumerate(self.player.components[index_of_inventory].items):
+            print(f"{i + 1}) {item}")
+        print(f"{len(self.player.components[index_of_inventory].items) + 1}) Back")
+    
+    def inputTargets(self):
+        creatures = self.battle_manager.battles[self.player.getData("in_battle")].participants
+        choice = intput("Choice: ") - 1
+        if choice == len(creatures):
+            self.popMenu()
+        elif 0 <= choice < len(creatures):
+            if self.hasDataInCache("ability_index")():
+                ability = self.player.actions[self.popDataFromCache("ability_index")()]
+                ability.apply([self.player, creatures[choice]])
+                self.popDataFromCache("waiting_for_turn")()
+                input()
+                self.popMenu()
+                self.popMenu()
+    
+    def displayTargets(self):
+        creatures = self.battle_manager.battles[self.player.getData("in_battle")].participants
+        for i, creature in enumerate(creatures):
+            print(f"{i + 1}) {creature.name} - ")
+        print(str(len(creatures) + 1) + ") Back")
 
     def inputDungeonExploration(self):
         command = input().split()

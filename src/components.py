@@ -89,10 +89,10 @@ class AI(Component):
             entity.game.battle_manager.leaveBattle(entity, battle.id)
         else:
             # Complicated Evaluation stuff.
-            flee_value = self.personality["flee"] * (1 - entity.hp / entity.max_hp)
+            flee_value = self.personality["flee"]["percent_of_missing_hp"] * (1 - entity.hp / entity.max_hp)
             for action in entity.actions:
                 # Catagorize Action Type
-                action_type = dummyFindActionType(action)
+                action_type = dummyFindActionType(entity, action)
                 if action_type == "self_heal":
                     ...
                 elif action_type == "other_heal":

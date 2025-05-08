@@ -138,6 +138,9 @@ class EntityInstance:
         to_return += f"SPEED: {self.speed}\n"
         to_return += self.description
         return to_return
+    
+    def getType(self):
+        return self.__entity_type
 
     @classmethod
     def fromDict(cls, data, entity_types):

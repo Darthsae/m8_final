@@ -1,5 +1,3 @@
-from .ability import AbilityInstance
-from .entity import EntityInstance
 import random
 
 class DummyEntity:
@@ -55,6 +53,7 @@ class DummyEntity:
             del self
 
     def addAction(self, action_type):
+        from .ability import AbilityInstance
         self.actions.append(AbilityInstance(action_type))
 
     def hasData(self, key):
@@ -69,7 +68,8 @@ class DummyEntity:
     def removeData(self, key):
         self.data.pop(key)
 
-def dummyFindActionType(entity: EntityInstance, action: AbilityInstance):
+def dummyFindActionType(entity, action):
+    from .entity import EntityInstance
     targets = action.getType().targets
     if "consumer" in targets:
         if "creature" not in targets:
@@ -88,4 +88,9 @@ def dummyFindActionType(entity: EntityInstance, action: AbilityInstance):
                 return "other_heal"
             elif old_hp_hostile > dummy_hostile.hp:
                 return "other_damage"
+
+def dummyTestDeep(entity, action, targets):
+    from .entity import EntityInstance
+    new_targets = [DummyEntity(entity_data) if isinstance(entity_data, EntityInstance) else entity_data for entity_data in targets]
+    action.apply(new_targets)
     

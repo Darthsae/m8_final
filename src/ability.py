@@ -37,6 +37,9 @@ class AbilityInstance:
         for effect in self.__ability_type.effects:
             effect(targets)
 
+    def __repr__(self):
+        return self.__ability_type.name
+
     @classmethod
     def fromDict(cls, data, ability_types):
         ability = cls(ability_types[data["type"]])
