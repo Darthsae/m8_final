@@ -1,0 +1,25 @@
+{
+  "name": "Envelope",
+  "description": "Envelope a target.",
+  "effects": [
+    {
+      "type": "change_hp",
+      "respect_cap": true,
+      "xp_target": 0,
+      "target": 1,
+      "amount": -5
+    },
+    {
+      "type": "add_data",
+      "decay": 1,
+      "data": "enveloped",
+      "value": true,
+      "target": 1
+    }
+  ], 
+  "targets": [
+    "consumer",
+    "creature"
+  ],
+  "requirements": []
+}

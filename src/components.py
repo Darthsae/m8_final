@@ -1,5 +1,6 @@
 from .item import ItemInstance
-from .dummy import dummyFindActionType
+from .dummy import dummyFindActionType, dummyTestSelfHeal, dummyTestHurt
+import random
 
 class Component:
     def __init__(self):
@@ -39,6 +40,13 @@ class Inventory(Component):
                 self.items[i] = itemToAdd
                 return True
         return False
+    
+    def displayInventory(self):
+        to_return = ""
+        for i, item in enumerate(self.items):
+            if item != None:
+                to_return += f"{i + 1}. {item.name} - {item.description}\n"
+        return to_return
 
     @classmethod
     def fromDict(cls, data):
@@ -90,15 +98,47 @@ class AI(Component):
         else:
             # Complicated Evaluation stuff.
             flee_value = self.personality["flee"]["percent_of_missing_hp"] * (1 - entity.hp / entity.max_hp)
+            self_heal_value = 0
+            other_damage_value = 0
+            heal_action = None
+            damage_action = None
+            target_index = 0
             for action in entity.actions:
                 # Catagorize Action Type
                 action_type = dummyFindActionType(entity, action)
                 if action_type == "self_heal":
-                    ...
+                    if not action.canApply([entity]):
+                        continue
+                    relevant_section = self.personality["heal"]["self"]["instant"]
+                    heal_amount = dummyTestSelfHeal(entity, action)
+                    self_heal_value += relevant_section["percent_of_total_hp"] * (heal_amount / entity.max_hp)
+                    self_heal_value += relevant_section["percent_of_missing_hp"] * (heal_amount / (entity.max_hp - entity.hp)) if entity.max_hp != entity.hp else 0
+                    self_heal_value += relevant_section["percent_of_remaining_hp"] * (heal_amount / entity.hp)
+                    heal_action = action
                 elif action_type == "other_heal":
                     ...
                 elif action_type == "other_damage":
-                    ...
+                    relevant_section = self.personality["attack"]["damage_to_target"]["instant"]
+                    for i, opponent in enumerate(opponents):
+                        if not action.canApply([entity, opponent]):
+                            continue
+                        cache = 0
+                        damage_amount = dummyTestHurt(entity, action, opponent)
+                        cache += relevant_section["percent_of_total_hp"] * (damage_amount / opponent.max_hp)
+                        cache += relevant_section["percent_of_remaining_hp"] * (damage_amount / opponent.hp)
+                        if cache > other_damage_value:
+                            damage_action = action
+                            other_damage_value = cache
+                            target_index = i
+            greatest = max(flee_value, self_heal_value, other_damage_value)
+            if greatest == flee_value:
+                print("Flee")
+            elif greatest == self_heal_value and heal_action != None:
+                heal_action.apply([entity])
+            elif greatest == other_damage_value and damage_action != None:
+                damage_action.apply([entity, opponents[target_index]])
+            else:
+                print("No actions?")
 
     @classmethod
     def fromDict(cls, data):
@@ -193,13 +233,11 @@ class AI(Component):
                             "percent_of_total_hp": 1.0,
                             "percent_of_missing_hp": 1.0,
                             "percent_of_remaining_hp": 1.0,
-                            "percent_of_max_hp": 1.0,
                         },
                         "instant": {
                             "percent_of_total_hp": 1.0,
                             "percent_of_missing_hp": 1.0,
                             "percent_of_remaining_hp": 1.0,
-                            "percent_of_max_hp": 1.0,
                         },
                     },
                 },

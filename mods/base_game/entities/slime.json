@@ -1,0 +1,10 @@
+{
+  "name": "Slime",
+  "description": "A gelatinous creature that pounces towards it enemies. They are very weak.",
+  "tags": [
+    "slime"
+  ],
+  "hp": 15,
+  "xp": 5,
+  "speed": 15
+}

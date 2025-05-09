@@ -1,0 +1,135 @@
+{
+  "name": "slime_brigade_spawn_pool",
+  "effects": [
+    {
+      "type": "add_entities",
+      "entities": [
+        {
+          "weight": 10,
+          "type": "slime",
+          "overrides": {
+            "faction": "monsters",
+            "components": [
+              {
+                "type": "ai",
+                "personality": {
+                  "attack": {
+                    "damage_to_target": {
+                      "overtime": {
+                        "number_of_targets": 1.0,
+                        "kills": 1.0,
+                        "percent_of_total_hp": 1.0,
+                        "percent_of_remaining_hp": 1.0
+                      },
+                      "instant": {
+                        "number_of_targets": 1.0,
+                        "kills": 1.0,
+                        "percent_of_total_hp": 1.0,
+                        "percent_of_remaining_hp": 1.0
+                      }
+                    },
+                    "damage_target_can_do": {
+                      "overtime": {
+                        "number_of_targets": 1.0,
+                        "kills": 1.0,
+                        "percent_of_total_hp": 1.0,
+                        "percent_of_remaining_hp": 1.0
+                      },
+                      "instant": {
+                        "number_of_targets": 1.0,
+                        "kills": 1.0,
+                        "percent_of_total_hp": 1.0,
+                        "percent_of_remaining_hp": 1.0
+                      }
+                    },
+                    "healing_target_can_do": {
+                      "others": {
+                        "overtime": {
+                          "number_of_targets": 1.0,
+                          "percent_of_total_hp": 1.0,
+                          "percent_of_missing_hp": 1.0,
+                          "percent_of_remaining_hp": 1.0,
+                          "percent_of_max_hp": 1.0
+                        },
+                        "instant": {
+                          "number_of_targets": 1.0,
+                          "percent_of_total_hp": 1.0,
+                          "percent_of_missing_hp": 1.0,
+                          "percent_of_remaining_hp": 1.0,
+                          "percent_of_max_hp": 1.0
+                        }
+                      },
+                      "self": {
+                        "overtime": {
+                          "percent_of_total_hp": 1.0,
+                          "percent_of_missing_hp": 1.0,
+                          "percent_of_remaining_hp": 1.0,
+                          "percent_of_max_hp": 1.0
+                        },
+                        "instant": {
+                          "percent_of_total_hp": 1.0,
+                          "percent_of_missing_hp": 1.0,
+                          "percent_of_remaining_hp": 1.0,
+                          "percent_of_max_hp": 1.0
+                        }
+                      }
+                    }
+                  },
+                  "heal": {
+                    "others": {
+                      "overtime": {
+                        "number_of_targets": 1.0,
+                        "percent_of_total_hp": 1.0,
+                        "percent_of_missing_hp": 1.0,
+                        "percent_of_remaining_hp": 1.0,
+                        "percent_of_max_hp": 1.0
+                      },
+                      "instant": {
+                        "number_of_targets": 1.0,
+                        "percent_of_total_hp": 1.0,
+                        "percent_of_missing_hp": 1.0,
+                        "percent_of_remaining_hp": 1.0,
+                        "percent_of_max_hp": 1.0
+                      }
+                    },
+                    "self": {
+                      "overtime": {
+                        "percent_of_total_hp": 1.0,
+                        "percent_of_missing_hp": 1.0,
+                        "percent_of_remaining_hp": 1.0,
+                        "percent_of_max_hp": 1.0
+                      },
+                      "instant": {
+                        "percent_of_total_hp": 1.0,
+                        "percent_of_missing_hp": 1.0,
+                        "percent_of_remaining_hp": 1.0,
+                        "percent_of_max_hp": 1.0
+                      }
+                    }
+                  },
+                  "flee": {
+                    "percent_of_missing_hp": 1.0
+                  }
+                }
+              }
+            ],
+            "actions": [],
+            "classes": []
+          }
+        }
+      ],
+      "amount": 3,
+      "target": 0
+    }
+  ],
+  "conditions": [],
+  "restrictions": {
+    "required": [],
+    "allowed": [
+      "connecting_room"
+    ],
+    "excluded": [
+      "no_hostile_entities"
+    ]
+  }
+}

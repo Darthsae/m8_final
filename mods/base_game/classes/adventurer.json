@@ -15,6 +15,10 @@
         {
           "type": "add",
           "ability": "escape_rope"
+        },
+        {
+          "type": "add",
+          "ability": "quick_strike"
         }
       ]
     },

@@ -27,7 +27,12 @@
             "target": 0
           }
         ],
-        "abilities": []
+        "abilities": [
+          {
+            "type": "add",
+            "ability": "quick_strike"
+          }
+        ]
       },
       {
         "xp_cost": 20,

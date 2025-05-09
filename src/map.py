@@ -148,6 +148,11 @@ class RoomInstance:
         self.entities.append(entity)
 
     def update(self):
+        to_kill = [participant for participant in self.entities if participant.to_die]
+        for dead in to_kill:
+            if dead.hasData("in_battle"):
+                dead.flee()
+                self.entities.remove(dead)
         for entity in self.entities:
             entity.update(self)
 
@@ -195,7 +200,8 @@ class Map:
                 if room_pool.getScore(self, (x, y)) > 0
             ]
             if len(options) == 0:
-                print("Worst Case Scenario.")
+                print("There is a wall there.")
+                return None
             room_pool = random.choice(options)[0]
             room = room_pool.generate(self)
             self.__assignRoom((x, y), room, room_pool.id)

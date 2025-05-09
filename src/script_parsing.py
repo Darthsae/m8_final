@@ -7,11 +7,13 @@ def parse(data, game):
 
     if data_type == "change_hp":
         respect_cap = data["respect_cap"]
+        xp_target = data["xp_target"]
         target = data["target"]
         amount = data["amount"]
 
         def toReturn(targets):
-            targets[target].changeHP(amount, respect_cap)
+            if targets[target].changeHP(amount, respect_cap) and xp_target != -1:
+                targets[xp_target].addXP(targets[target].xp)
     elif data_type == "check_data":
         present = data["present"]
         key = data["data"]

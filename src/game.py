@@ -227,8 +227,78 @@ class Game:
             "target_select": MenuType(
                 self.displayTargets,
                 self.inputTargets
+            ),
+            "character_sheet": MenuType(
+                self.displayCharacterSheet,
+                self.inputCharacterSheet
+            ),
+            "character_level": MenuType(
+                self.displayCharacterLevel,
+                self.inputCharacterLevel
+            ),
+            "character_level_view": MenuType(
+                self.displayCharacterLevelView,
+                self.inputCharacterLevelView
             )
         }
+
+    def displayCharacterSheet(self):
+        print(self.player.detailedBattleDescription())
+        print("Inventory: ")
+        index_of_inventory = 0
+        for i, component in enumerate(self.player.components):
+            if isinstance(component, Inventory):
+                index_of_inventory = i
+        
+        for i, item in enumerate(self.player.components[index_of_inventory].items):
+            print(f"{i + 1}. {item} - {item.description if item != None else None}")
+        print("\nAbilities: ")
+        for i, ability in enumerate(self.player.actions):
+            print(f"{i + 1}. {ability.getType().name} - {ability.getType().description}")
+        print()
+        print("1) Inspect Item")
+        print("2) Level Class")
+        print("3) Back")
+
+    def inputCharacterSheet(self):
+        option = intput("Option: ") - 1
+        if option == 0:
+            #self.addMenu("inspect_item")()
+            ...
+        elif option == 1:
+            self.addMenu("character_level")()
+        elif option == 2:
+            self.popMenu()
+
+    def displayCharacterLevel(self):
+        print("\nClasses: ")
+        for i, class_data in enumerate(self.class_types.values()):
+            print(f"{i + 1}) {class_data.name}")
+        print(str(len(self.class_types) + 1) + ") Back")
+
+    def inputCharacterLevel(self):
+        choice = intput("Choice: ") - 1
+        if choice == len(self.class_types):
+            self.popMenu()
+        elif 0 <= choice < len(self.class_types):
+            self.saveDataToCache("class_type")(list(self.class_types.keys())[choice])
+            self.addMenu("character_level_view")()
+
+    def displayCharacterLevelView(self):
+        class_doota = self.class_types[self.retrieveDataFromCache("class_type")()]
+        print(f"{class_doota.name} ({self.player.levelInClass(class_doota) + 1}/{class_doota.maxLevel()})")
+        print(f"{class_doota.description}")
+        print()
+        print(f"1) Take Level ({self.player.nextXPInClass(class_doota)} XP)")
+        print("2) Back")
+
+    def inputCharacterLevelView(self):
+        option = intput("Option: ") - 1
+        if option == 0:
+            #self.addMenu("inspect_item")()
+            ...
+        elif option == 1:
+            self.popMenu()
 
     def createCharacter(self):
         self.player.name = self.popDataFromCache("character_name")()
@@ -340,11 +410,10 @@ class Game:
                     for faction_json in os.scandir(path + "/factions"):
                         if faction_json.is_file() and faction_json.name[-5:] == ".json":
                             with open(faction_json.path, "r") as f:
-                                self.factions[faction_json.name[:-5]] = (
-                                    Faction.fromDict(
-                                        faction_json.name[:-5], json.load(f)
-                                    )
-                                )
+                                data_f = json.load(f)
+                                self.factions[faction_json.name[:-5]] = (Faction.fromDict(faction_json.name[:-5], data_f))
+                                if "player" in data_f["hostile"]:
+                                    self.factions["player"].hostile.append(faction_json.name[:-5])
                 elif file.name == "spawn_pools":
                     print("Spawn Pools is present.")
                     for spawn_pool_json in os.scandir(path + "/spawn_pools"):
@@ -401,7 +470,14 @@ class Game:
         self.menu_stack.pop()
 
     def displayDungeonCombat(self):
+        if self.player.to_die:
+            self.popMenu()
+            self.popMenu()
+            self.clearData()
+            return
         if not self.hasDataInCache("waiting_for_turn")() or not self.retrieveDataFromCache("waiting_for_turn")():
+            room = self.map.getRoom(self.player_x, self.player_y)
+            room.update()
             self.battle_manager.updateBattles(self)
         self.saveDataToCache("waiting_for_turn")(True)
         print("1) Inspect Creature")
@@ -418,6 +494,10 @@ class Game:
             self.addMenu("item_select")()
 
     def displayDungeonExploration(self):
+        if self.player.to_die:
+            self.popMenu()
+            self.clearData()
+            return
         print(self.player.name)
         print(self.player.getClassesDisplayString())
     
@@ -441,19 +521,32 @@ class Game:
     def inputListActions(self):
         actions = self.player.actions
         choice = intput("Choice: ") - 1
-        print(f"0 <= {choice} < {len(actions)} - {0 <= choice < len(actions)}")
+        #print(f"0 <= {choice} < {len(actions)} - {0 <= choice < len(actions)}")
         if choice == len(actions):
             self.popMenu()
         elif 0 <= choice < len(actions):
             action = self.player.actions[choice]
             action_type = dummyFindActionType(self.player, action)
+            #print(action_type)
             if action_type == "self_heal":
+                if not action.canApply([self.player]):
+                    print("You can not use that action right now.")
+                    return
                 action.apply([self.player])
+                self.popDataFromCache("waiting_for_turn")()
+                input()
+                self.popMenu()
             elif action_type in ["other_heal", "other_damage"]:
                 self.saveDataToCache("ability_index")(choice)
-                self.addMenu("target_select")
+                self.addMenu("target_select")()
             else:
+                if not action.canApply([self.player]):
+                    print("You can not use that action right now.")
+                    return
                 action.apply([self.player])
+                self.popDataFromCache("waiting_for_turn")()
+                input()
+                self.popMenu()
     
     def displayListActions(self):
         for i, action in enumerate(self.player.actions):
@@ -471,7 +564,7 @@ class Game:
         if choice == len(items):
             self.popMenu()
         elif 0 <= choice < len(items):
-            self.addMenu("target_select")
+            self.addMenu("target_select")()
     
     def displayListItems(self):
         index_of_inventory = 0
@@ -491,6 +584,9 @@ class Game:
         elif 0 <= choice < len(creatures):
             if self.hasDataInCache("ability_index")():
                 ability = self.player.actions[self.popDataFromCache("ability_index")()]
+                if not ability.canApply([self.player, creatures[choice]]):
+                    print("You can not use that action on that target right now.")
+                    return
                 ability.apply([self.player, creatures[choice]])
                 self.popDataFromCache("waiting_for_turn")()
                 input()
@@ -531,17 +627,30 @@ class Game:
             room = self.map.getRoom(self.player_x, self.player_y)
             if len(command) < 2:
                 print("Add a direction to move in.")
-            direction = command[1]
-            if direction == "north":
-                self.player_y += 1
-            elif direction == "south":
-                self.player_y -= 1
-            elif direction == "east":
-                self.player_x += 1
-            elif direction == "west":
-                self.player_x -= 1
+            else:
+                direction = command[1]
+                if direction == "north":
+                    self.player_y += 1
+                elif direction == "south":
+                    self.player_y -= 1
+                elif direction == "east":
+                    self.player_x += 1
+                elif direction == "west":
+                    self.player_x -= 1
+                room = self.map.getRoom(self.player_x, self.player_y)
+                if room == None: 
+                    if direction == "north":
+                        self.player_y += -1
+                    elif direction == "south":
+                        self.player_y -= -1
+                    elif direction == "east":
+                        self.player_x += -1
+                    elif direction == "west":
+                        self.player_x -= -1
             room = self.map.getRoom(self.player_x, self.player_y)
             print(room.getDescription())
+        elif command_key == "character":
+            self.addMenu("character_sheet")()
 
         room = self.map.getRoom(self.player_x, self.player_y)
         room.update()

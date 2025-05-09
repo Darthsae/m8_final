@@ -48,6 +48,7 @@ class EntityInstance:
         self.speed = self.__entity_type.speed
         self.faction = ""
         self.data = {}
+        self.to_die = False
 
     def getDescription(self):
         return " ".join(["There is a", self.name, "in the room."])
@@ -74,8 +75,11 @@ class EntityInstance:
         else:
             return False
 
+    def addXP(self, amount):
+        self.xp += amount
+
     def update(self, room):
-        for key in self.data:
+        for key in list(self.data.keys()):
             value = self.data.pop(key)
             if value[1] == 0:
                 pass
@@ -89,6 +93,18 @@ class EntityInstance:
     def battleUpdate(self, battle, opponents):
         for component in self.components:
             component.battle(battle, self, opponents)
+
+    def levelInClass(self, class_type):
+        for class_instance in self.__classes:
+            if class_instance.getType() == class_type:
+                return class_instance.level
+        return -1
+    
+    def nextXPInClass(self, class_type):
+        for class_instance in self.__classes:
+            if class_instance.getType() == class_type:
+                return class_type.level_data[class_instance.level + 1].xp_cost if class_instance.level + 1 < class_type.maxLevel() else -1
+        return class_type.level_data[0].xp_cost
 
     def gainClassLevel(self, class_type, ability_types):
         for class_instance in self.__classes:
@@ -110,12 +126,15 @@ class EntityInstance:
         if respect_cap:
             self.hp = min(self.hp, pre_hp)
         if self.hp == 0:
-            del self
+            self.to_die = True
+            return True
 
     def addAction(self, action_type):
         self.actions.append(AbilityInstance(action_type))
 
-    def flee(self): ...
+    def flee(self):
+        if self.hasData("in_battle"):
+            self.game.battle_manager.leaveBattle(self, self.getData("in_battle"))
 
     def changeRoom(self, x, y): ...
 

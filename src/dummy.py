@@ -14,7 +14,7 @@ class DummyEntity:
         self.xp = entity_instance.xp
         self.speed = entity_instance.speed
         self.faction = entity_instance.faction
-        self.data = entity_instance.data
+        self.data = entity_instance.data.copy()
 
     def hasFaction(self):
         return self.faction != ""
@@ -75,15 +75,19 @@ def dummyFindActionType(entity, action):
         if "creature" not in targets:
             return "self_heal"
         else:
+            dummy_self = DummyEntity(entity)
             dummy_friendly = DummyEntity(EntityInstance(entity.game, EntityInstance.NULL_ENTITY_TYPE))
+            dummy_friendly.max_hp = 100
+            dummy_friendly.hp = 90
             dummy_friendly.faction = entity.faction
-            dummy_friendly.hp -= 10
             old_hp_friendly = dummy_friendly.hp
-            action.apply([entity, dummy_friendly])
+            action.apply([dummy_self, dummy_friendly])
             dummy_hostile = DummyEntity(EntityInstance(entity.game, EntityInstance.NULL_ENTITY_TYPE))
+            dummy_hostile.max_hp = 100
+            dummy_hostile.hp = 100
             dummy_hostile.faction = random.choice(entity.game.factions[entity.faction].hostile)
             old_hp_hostile = dummy_hostile.hp
-            action.apply([entity, dummy_hostile])
+            action.apply([dummy_self, dummy_hostile])
             if old_hp_friendly < dummy_friendly.hp:
                 return "other_heal"
             elif old_hp_hostile > dummy_hostile.hp:
@@ -93,4 +97,18 @@ def dummyTestDeep(entity, action, targets):
     from .entity import EntityInstance
     new_targets = [DummyEntity(entity_data) if isinstance(entity_data, EntityInstance) else entity_data for entity_data in targets]
     action.apply(new_targets)
+
+def dummyTestSelfHeal(entity, action):
+    targets = [DummyEntity(entity)]
+    pre_hp = targets[0].hp
+    action.apply(targets)
+    post_hp = targets[0].hp
+    return post_hp - pre_hp
+    
+def dummyTestHurt(entity, action, target):
+    targets = [DummyEntity(entity), DummyEntity(target)]
+    pre_hp = targets[1].hp
+    action.apply(targets)
+    post_hp = targets[1].hp
+    return pre_hp - post_hp
     

@@ -1,0 +1,25 @@
+{
+  "name": "Consume",
+  "description": "Dissolve an enveloped target.",
+  "effects": [
+    {
+      "type": "change_hp",
+      "respect_cap": true,
+      "xp_target": 0,
+      "target": 1,
+      "amount": -25
+    }
+  ], 
+  "targets": [
+    "consumer",
+    "creature"
+  ],
+  "requirements": [
+    {
+      "type": "check_data",
+      "present": true,
+      "data": "enveloped",
+      "target": 1
+    }
+  ]
+}
