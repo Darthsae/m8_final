@@ -1,0 +1,12 @@
+{
+  "name": "Shortsword",
+  "description": "A simple sword.",
+  "tags": [
+    "weapon",
+    "sword"
+  ],
+  "stack": 1,
+  "uses": [
+    "slash"
+  ]
+}

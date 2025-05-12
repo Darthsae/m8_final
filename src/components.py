@@ -20,6 +20,19 @@ class Component:
         return {}
 
 
+class FunctionHolder(Component):
+    def __init__(self, update, battle):
+        self.update_callback = update
+        self.battle_callback = battle
+    
+    def update(self, room, entity):
+        if self.update_callback != None:
+            self.update_callback()
+    
+    def battle(self, battle, entity, opponents):
+        if self.battle_callback != None:
+            self.battle_callback()
+
 class Inventory(Component):
     def __init__(self, size):
         self.items = [None for _ in range(size)]
@@ -29,15 +42,11 @@ class Inventory(Component):
 
     def addItem(self, itemToAdd):
         for i, item in enumerate(self.items):
-            if (
-                isinstance(item, ItemInstance)
-                and item.getType() == itemToAdd.getType()
-                and item.canAddStack(itemToAdd.stack)
-            ):
-                item.addStack(itemToAdd.stack)
+            if (isinstance(item, ItemInstance) and item.getType() == itemToAdd and item.canAddStack(itemToAdd)):
+                item.changeStack(1)
                 return True
-            elif isinstance(item, None):
-                self.items[i] = itemToAdd
+            elif item == None:
+                self.items[i] = ItemInstance(itemToAdd)
                 return True
         return False
     
@@ -47,6 +56,11 @@ class Inventory(Component):
             if item != None:
                 to_return += f"{i + 1}. {item.name} - {item.description}\n"
         return to_return
+    
+    def update(self, room, entity):
+        for i in range(len(self.items)):
+            if isinstance(self.items[i], ItemInstance) and self.items[i].stack == 0:
+                self.items[i] = None
 
     @classmethod
     def fromDict(cls, data):
@@ -78,23 +92,37 @@ class AI(Component):
                 for entity_room in entities_in_room
                 if entity.isHostile(entity_room)
             ]
-            if len(hostile) > 0:
-                id = entity.game.battle_manager.startBattle(room)
-                entity.game.battle_manager.joinBattle(entity, id)
-                for hostile_creature in hostile:
-                    if hostile_creature == entity.game.player:
+            priority_target = -1
+
+            for i, hostile_creature in enumerate(hostile):
+                if hostile_creature == entity.game.player:
+                    priority_target = i
+                    break
+                else: 
+                    priority_target = i
+
+            if priority_target > -1:
+                target = hostile[priority_target]
+                if target.hasData("in_battle"):
+                    entity.game.battle_manager.joinBattle(entity, target.getData("in_battle"))
+                else:
+                    id = entity.game.battle_manager.startBattle(room)
+                    entity.game.battle_manager.joinBattle(entity, id)
+                    if target == entity.game.player:
                         entity.game.addMenu("dungeon_combat")()
-                    entity.game.battle_manager.joinBattle(hostile_creature, id)
+                    entity.game.battle_manager.joinBattle(target, id)
+                    
         else:
             ...
 
     def battle(self, battle, entity, participants):
+        #print("Battle Was Called")
         opponents = [
-            participant for participant in participants if entity.isHostile(participant)
+            participant for participant in participants if entity.isHostile(participant) and not participant.to_die
         ]
         allies = list(set(participants) - set(opponents))
         if len(opponents) == 0:
-            entity.game.battle_manager.leaveBattle(entity, battle.id)
+            entity.flee()
         else:
             # Complicated Evaluation stuff.
             flee_value = self.personality["flee"]["percent_of_missing_hp"] * (1 - entity.hp / entity.max_hp)
@@ -123,7 +151,7 @@ class AI(Component):
                         if not action.canApply([entity, opponent]):
                             continue
                         cache = 0
-                        damage_amount = dummyTestHurt(entity, action, opponent)
+                        damage_amount = dummyTestHurt([entity, opponent], action, 1)
                         cache += relevant_section["percent_of_total_hp"] * (damage_amount / opponent.max_hp)
                         cache += relevant_section["percent_of_remaining_hp"] * (damage_amount / opponent.hp)
                         if cache > other_damage_value:
@@ -132,10 +160,13 @@ class AI(Component):
                             target_index = i
             greatest = max(flee_value, self_heal_value, other_damage_value)
             if greatest == flee_value:
-                print("Flee")
+                entity.flee()
+                print(f"{entity.name} fled!")
             elif greatest == self_heal_value and heal_action != None:
+                print(f"{entity.name} used {heal_action} and healed itself!")
                 heal_action.apply([entity])
             elif greatest == other_damage_value and damage_action != None:
+                print(f"{entity.name} used {damage_action} on {opponents[target_index].name} for {damage_amount} damage!")
                 damage_action.apply([entity, opponents[target_index]])
             else:
                 print("No actions?")

@@ -3,11 +3,17 @@
   "description": "A simple adventurer.",
   "level_data": [
     {
-      "xp_cost": 0,
+      "xp_cost": 5,
       "features": [
         {
           "type": "change_max_hp",
           "amount": 25,
+          "target": 0
+        },
+        {
+          "type": "add_item",
+          "item": "shortsword",
+          "amount": 1,
           "target": 0
         }
       ],

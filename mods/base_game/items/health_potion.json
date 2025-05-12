@@ -7,26 +7,6 @@
   ],
   "stack": 15,
   "uses": [
-    {
-      "name": "Heal",
-      "description": "Heal 20HP",
-      "effects": [
-        {
-          "type": "change_hp",
-          "respect_cap": true,
-          "xp_target": -1,
-          "target": 0,
-          "amount": 20
-        },
-        {
-          "type": "change_stack",
-          "amount": -1
-        }
-      ], 
-      "targets": [
-        "consumer"
-      ],
-      "requirements": []
-    }
+    "health_potion_heal"
   ]
 }

@@ -108,17 +108,19 @@
                     }
                   },
                   "flee": {
-                    "percent_of_missing_hp": 1.0
+                    "percent_of_missing_hp": 0.0
                   }
                 }
               }
             ],
-            "actions": [],
-            "classes": []
+            "actions": [
+              "envelope",
+              "consume"
+            ]
           }
         }
       ],
-      "amount": 3,
+      "amount": 2,
       "target": 0
     }
   ],
@@ -129,7 +131,8 @@
       "connecting_room"
     ],
     "excluded": [
-      "no_hostile_entities"
+      "no_hostile_entities",
+      "mini_boss_room"
     ]
   }
 }

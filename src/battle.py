@@ -30,7 +30,7 @@ class BattleManager:
 
         # TODO: Check for any invalid battles and end them.
         for key in to_nuke:
-            to_nuke.remove(key)
+            self.battles.pop(key)
 
 class BattleInstance:
     def __init__(self, id, room):
@@ -44,7 +44,7 @@ class BattleInstance:
         organized_participants = sorted(self.participants, key=idk, reverse=True)
         for participant in organized_participants:
             if participant in self.participants:
-                participant.battleUpdate(self.room, [participant_thing for participant_thing in self.participants if not participant_thing is participant])
+                participant.battleUpdate(self, [participant_thing for participant_thing in self.participants if not participant_thing is participant])
     
     def isOver(self):
         return len(self.participants) == 0

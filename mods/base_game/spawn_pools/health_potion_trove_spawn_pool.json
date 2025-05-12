@@ -1,0 +1,31 @@
+{
+  "name": "health_potion_trove_spawn_pool",
+  "effects": [
+    {
+      "type": "add_interactable",
+      "interactable": {
+        "name": "Chest",
+        "description": "It is a simple wooden chest with no lock.",
+        "tags": [],
+        "uses": [
+          "get_health_potion"
+        ],
+        "data": {}
+      },
+      "amount": 1,
+      "target": 0
+    }
+  ],
+  "conditions": [],
+  "restrictions": {
+    "required": [],
+    "allowed": [
+      "starting_room",
+      "connecting_room",
+      "no_hostile_entities"
+    ],
+    "excluded": [
+      "mini_boss_room"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Get Health Potion",
+  "description": "Get a health potion.",
+  "effects": [
+    {
+      "type": "add_item",
+      "item": "health_potion",
+      "amount": 1,
+      "target": 0
+    }
+  ],
+  "targets": [
+    "consumer",
+    "interactable",
+    "room"
+  ],
+  "requirements": []
+}

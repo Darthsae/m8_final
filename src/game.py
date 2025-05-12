@@ -3,12 +3,12 @@ from .faction import Faction
 from .map import Map, RoomType, RoomPool, SpawnPool
 from .util import intput
 from .menu import MenuType, MenuInstance
-from .components import Inventory
+from .components import Inventory, FunctionHolder
 from .classes import ClassType
 from .item import ItemType
-from .ability import AbilityType
+from .ability import AbilityType, AbilityInstance
 from .battle import BattleManager
-from .dummy import dummyFindActionType
+from .dummy import dummyFindActionType, dummyTestHurt, dummyTestSelfHeal
 import os, json
 
 
@@ -124,6 +124,7 @@ class Game:
         self.addMenu("main_menu")()
 
         self.getMods()
+        self.reloadWithActiveMods()
         self.player_x = 0
         self.player_y = 0
 
@@ -163,29 +164,27 @@ class Game:
                         generateDisplayDict(self.getClassTypes),
                     ]
                 ),
-                concatenateFunctions(
-                    [
-                        passInputToCallback(
-                            "Class of Character: ",
-                            int,
-                            remapAndCallback(
-                                remapValueToAnother(
-                                    {
-                                        i + 1: class_type
-                                        for i, class_type in enumerate(
-                                            list(self.class_types)
-                                        )
-                                    },
-                                    -1,
-                                ),
-                                self.saveDataToCache("character_class"),
+                concatenateFunctions([
+                    passInputToCallback(
+                        "Class of Character: ",
+                        int,
+                        remapAndCallback(
+                            remapValueToAnother(
+                                {
+                                    i + 1: class_type
+                                    for i, class_type in enumerate(
+                                        list(self.class_types)
+                                    )
+                                },
+                                -1,
                             ),
+                            self.saveDataToCache("character_class"),
                         ),
-                        self.createCharacter,
-                        self.popMenu,
-                        self.addMenu("dungeon_exploration"),
-                    ]
-                ),
+                    ),
+                    self.createCharacter,
+                    self.popMenu,
+                    self.addMenu("dungeon_exploration"),
+                ]),
             ),
             "mods": MenuType(
                 concatenateFunctions(
@@ -239,6 +238,10 @@ class Game:
             "character_level_view": MenuType(
                 self.displayCharacterLevelView,
                 self.inputCharacterLevelView
+            ),
+            "inspect_item": MenuType(
+                self.displayInspectItem,
+                self.inputInspectItem
             )
         }
 
@@ -249,22 +252,24 @@ class Game:
         for i, component in enumerate(self.player.components):
             if isinstance(component, Inventory):
                 index_of_inventory = i
-        
+        just = len(str(len(self.player.components[index_of_inventory].items)))
         for i, item in enumerate(self.player.components[index_of_inventory].items):
-            print(f"{i + 1}. {item} - {item.description if item != None else None}")
+            print(f"{str(i + 1).rjust(just)}. {item} - {item.description if item != None else None}")
         print("\nAbilities: ")
+        just = len(str(len(self.player.actions)))
         for i, ability in enumerate(self.player.actions):
-            print(f"{i + 1}. {ability.getType().name} - {ability.getType().description}")
+            print(f"{str(i + 1).rjust(just)}. {ability.getType().name} - {ability.getType().description}")
         print()
         print("1) Inspect Item")
         print("2) Level Class")
-        print("3) Back")
+        print("3) Back\n")
 
     def inputCharacterSheet(self):
         option = intput("Option: ") - 1
         if option == 0:
-            #self.addMenu("inspect_item")()
-            ...
+            item_index = intput("Item Number: ") - 1
+            self.addMenu("inspect_item")()
+            self.saveDataToCache("item_index")(item_index)
         elif option == 1:
             self.addMenu("character_level")()
         elif option == 2:
@@ -272,9 +277,10 @@ class Game:
 
     def displayCharacterLevel(self):
         print("\nClasses: ")
+        just = len(str(len(self.class_types)))
         for i, class_data in enumerate(self.class_types.values()):
-            print(f"{i + 1}) {class_data.name}")
-        print(str(len(self.class_types) + 1) + ") Back")
+            print(f"{str(i + 1).rjust(just)}) {class_data.name}")
+        print(str(len(self.class_types) + 1).rjust(just) + ") Back\n")
 
     def inputCharacterLevel(self):
         choice = intput("Choice: ") - 1
@@ -284,19 +290,70 @@ class Game:
             self.saveDataToCache("class_type")(list(self.class_types.keys())[choice])
             self.addMenu("character_level_view")()
 
+    def displayInspectItem(self):
+        for component in self.player.components:
+            if isinstance(component, Inventory):
+                item = component.getItem(self.retrieveDataFromCache("item_index")())
+                print()
+                print(f"{item.name} ({item.stack}/{item.max_stack})")
+                print("[" + ", ".join(map(str.capitalize, item.tags)) + "]\n")
+                print(item.description)
+                print()
+                print("1) Uses")
+                print("2) Back\n")
+                return
+
+    def inputInspectItem(self):
+        choice = intput("Choice: ") - 1
+        if choice == 0:
+            for component in self.player.components:
+                if isinstance(component, Inventory):
+                    item = component.getItem(self.retrieveDataFromCache("item_index")())
+                    uses = [AbilityInstance(self.ability_types[data]) for data in item.getType().uses]
+                    just = len(str(len(uses)))
+                    for i, use in enumerate(uses):
+                        print(f"{str(i + 1).rjust(just)}) {use.getType().name} - {use.getType().description}")
+                    print(f"{str(len(uses) + 1).rjust(just)}) Back\n")
+                    while True:
+                        choice = intput("Option: ") - 1
+                        if choice == len(uses):
+                            break
+                        elif 0 <= choice < len(uses):
+                            if not uses[choice].canApply([self.player, item]):
+                                print("You can not use that item like that right now.\n")
+                            else:
+                                uses[choice].apply([self.player, item])
+                                if item.stack == 0:
+                                    component.items[self.popDataFromCache("item_index")()] = None
+                                    self.popMenu()
+                                break
+        elif choice == 1:
+            self.popDataFromCache("item_index")()
+            self.popMenu()
+
     def displayCharacterLevelView(self):
         class_doota = self.class_types[self.retrieveDataFromCache("class_type")()]
         print(f"{class_doota.name} ({self.player.levelInClass(class_doota) + 1}/{class_doota.maxLevel()})")
         print(f"{class_doota.description}")
         print()
         print(f"1) Take Level ({self.player.nextXPInClass(class_doota)} XP)")
-        print("2) Back")
+        print("2) Back\n")
 
     def inputCharacterLevelView(self):
         option = intput("Option: ") - 1
-        if option == 0:
-            #self.addMenu("inspect_item")()
-            ...
+        if option == 0: 
+            class_doota = self.class_types[self.retrieveDataFromCache("class_type")()]
+            xp_cost = self.player.nextXPInClass(class_doota)
+            if xp_cost == -1:
+                print("You are already max level.\n")
+            elif self.player.xp < xp_cost:
+                print("You lack the neccessary XP to take a level in this class.\n")
+            else:
+                self.player.xp -= xp_cost
+                self.player.gainClassLevel(class_doota, self.ability_types)
+                print(f"You have gained one level in {class_doota.name}.\n")
+                input()
+                self.popMenu()
         elif option == 1:
             self.popMenu()
 
@@ -305,6 +362,7 @@ class Game:
         self.player.max_hp = 100
         self.player.hp = 100
         self.player.components.append(Inventory(12))
+        self.player.components.append(FunctionHolder(None, self.combatMenu))
         self.player.gainClassLevel(
             self.class_types[self.popDataFromCache("character_class")()],
             self.ability_types,
@@ -329,6 +387,10 @@ class Game:
         for file in os.scandir("mods"):
             if file.is_dir() and os.path.exists(file.path + "/mod.json"):
                 self.__mods[file.name] = False
+                with open(file.path + "/mod.json", "r") as f:
+                    mod_data = json.load(f)
+                    if "default_to_on" in mod_data:
+                        self.__mods[file.name] = mod_data["default_to_on"]
 
     def reloadWithActiveMods(self):
         mods = [f"mods/{key}" for key, value in self.__mods.items() if value]
@@ -470,36 +532,49 @@ class Game:
         self.menu_stack.pop()
 
     def displayDungeonCombat(self):
-        if self.player.to_die:
-            self.popMenu()
-            self.popMenu()
-            self.clearData()
-            return
         if not self.hasDataInCache("waiting_for_turn")() or not self.retrieveDataFromCache("waiting_for_turn")():
             room = self.map.getRoom(self.player_x, self.player_y)
             room.update()
             self.battle_manager.updateBattles(self)
-        self.saveDataToCache("waiting_for_turn")(True)
-        print("1) Inspect Creature")
-        print("2) Take Action")
-        print("3) Use Item")
 
     def inputDungeonCombat(self): 
-        option = intput("Option: ") - 1
-        if option == 0:
-            self.addMenu("creature_inspect")()
-        elif option == 1:
-            self.addMenu("action_select")()
-        elif option == 2:
-            self.addMenu("item_select")()
-
-    def displayDungeonExploration(self):
         if self.player.to_die:
+            self.popMenu()
             self.popMenu()
             self.clearData()
             return
-        print(self.player.name)
-        print(self.player.getClassesDisplayString())
+        
+        if not self.player.hasData("in_battle"):
+            self.popMenu()
+            return
+
+    def combatMenu(self):
+        self.saveDataToCache("waiting_for_turn")(True)
+        while self.hasDataInCache("waiting_for_turn")():
+            if self.menu_stack[-1].getType() == self.menus["dungeon_combat"]:
+                room = self.map.getRoom(self.player_x, self.player_y)
+                print("\n" + room.getDescription())
+                print()
+                print("1) Inspect Creature")
+                print("2) Take Action")
+                print("3) Use Item")
+                print("4) Flee\n")
+                option = intput("Option: ") - 1
+                if option == 0:
+                    self.addMenu("creature_inspect")()
+                elif option == 1:
+                    self.addMenu("action_select")()
+                elif option == 2:
+                    self.addMenu("item_select")()
+                elif option == 3:
+                    self.player.flee()
+                    self.popDataFromCache("waiting_for_turn")()
+            else:
+                self.menu_stack[-1].displayMenu()
+                self.menu_stack[-1].inputMenu()
+
+    def displayDungeonExploration(self):
+        print()
     
     def inputListCreatures(self):
         creatures = self.battle_manager.battles[self.player.getData("in_battle")].participants
@@ -508,15 +583,15 @@ class Game:
             self.popMenu()
         elif 0 <= choice < len(creatures):
             print(creatures[choice].detailedBattleDescription())
-            self.popDataFromCache("waiting_for_turn")()
             input()
             self.popMenu()
 
     def displayListCreatures(self):
         creatures = self.battle_manager.battles[self.player.getData("in_battle")].participants
+        just = len(str(len(creatures)))
         for i, creature in enumerate(creatures):
-            print(f"{i + 1}) {creature.name}")
-        print(str(len(creatures) + 1) + ") Back")
+            print(f"{str(i + 1).rjust(just)}) {creature.name}")
+        print(str(len(creatures) + 1).rjust(just) + ") Back\n")
 
     def inputListActions(self):
         actions = self.player.actions
@@ -530,7 +605,7 @@ class Game:
             #print(action_type)
             if action_type == "self_heal":
                 if not action.canApply([self.player]):
-                    print("You can not use that action right now.")
+                    print("You can not use that action right now.\n")
                     return
                 action.apply([self.player])
                 self.popDataFromCache("waiting_for_turn")()
@@ -541,7 +616,7 @@ class Game:
                 self.addMenu("target_select")()
             else:
                 if not action.canApply([self.player]):
-                    print("You can not use that action right now.")
+                    print("You can not use that action right now.\n")
                     return
                 action.apply([self.player])
                 self.popDataFromCache("waiting_for_turn")()
@@ -549,9 +624,10 @@ class Game:
                 self.popMenu()
     
     def displayListActions(self):
+        just = len(str(len(self.player.actions)))
         for i, action in enumerate(self.player.actions):
-            print(f"{i + 1}) {action}")
-        print(f"{len(self.player.actions) + 1}) Back")
+            print(f"{str(i + 1).rjust(just)}) {action}")
+        print(f"{str(len(self.player.actions) + 1).rjust(just)}) Back\n")
 
     def inputListItems(self):
         index_of_inventory = 0
@@ -564,17 +640,53 @@ class Game:
         if choice == len(items):
             self.popMenu()
         elif 0 <= choice < len(items):
-            self.addMenu("target_select")()
+            stack = items[choice]
+            if stack == None or len(stack.getType().uses) <= 0:
+                print("That item has no uses.\n")
+                return
+            index = 0
+            uses = [AbilityInstance(self.ability_types[data]) for data in stack.getType().uses]
+            for i, use in enumerate(uses):
+                print(f"{i + 1}) {use.getType().name} - {use.getType().description}")
+            print(f"{len(uses) + 1}) Back\n")
+            while True:
+                choice = intput("Option: ") - 1
+                if choice == len(uses):
+                    break
+                elif 0 <= choice < len(uses):
+                    self.saveDataToCache("item_ability")(stack.getType().uses[index])
+                    action = AbilityInstance(self.ability_types[self.retrieveDataFromCache("item_ability")()])
+                    if "creature" in action.getType().targets:
+                        self.saveDataToCache("item_index")(choice)
+                        self.addMenu("target_select")()
+                        break
+                    else:
+                        if not action.canApply([self.player, stack]):
+                            print("You can not use that action right now.\n")
+                            continue
+                        action.apply([self.player, stack])
+                        if stack.stack == 0:
+                            items[choice] = None
+                        print()
+                        print(f"{self.player.name} used {stack.name}.")
+                        print()
+                        self.popDataFromCache("item_ability")
+                        self.popDataFromCache("waiting_for_turn")()
+                        self.popMenu()
+                        break
+            
     
     def displayListItems(self):
         index_of_inventory = 0
         for i, component in enumerate(self.player.components):
             if isinstance(component, Inventory):
                 index_of_inventory = i
-        
+
+        just = len(str(len(self.player.components[index_of_inventory].items)))
         for i, item in enumerate(self.player.components[index_of_inventory].items):
-            print(f"{i + 1}) {item}")
-        print(f"{len(self.player.components[index_of_inventory].items) + 1}) Back")
+            if item != None:
+                print(f"{str(i + 1).rjust(just)}) {item}")
+        print(f"{str(len(self.player.components[index_of_inventory].items) + 1).rjust(just)}) Back\n")
     
     def inputTargets(self):
         creatures = self.battle_manager.battles[self.player.getData("in_battle")].participants
@@ -585,21 +697,51 @@ class Game:
             if self.hasDataInCache("ability_index")():
                 ability = self.player.actions[self.popDataFromCache("ability_index")()]
                 if not ability.canApply([self.player, creatures[choice]]):
-                    print("You can not use that action on that target right now.")
+                    print("You can not use that action on that target right now.\n")
                     return
+                calc = creatures[choice].hp
                 ability.apply([self.player, creatures[choice]])
+                calc -= creatures[choice].hp
                 self.popDataFromCache("waiting_for_turn")()
-                input()
+                print()
+                print(f"{self.player.name} used {ability.getType().name} on {creatures[choice].name} for {calc} damage.")
+                self.popMenu()
+                self.popMenu()
+            elif self.hasDataInCache("item_index")():
+                ability = AbilityInstance(self.ability_types[self.popDataFromCache("item_ability")()])
+                index_of_inventory = 0
+                for i, component in enumerate(self.player.components):
+                    if isinstance(component, Inventory):
+                        index_of_inventory = i
+                stack = self.player.components[index_of_inventory].items[self.popDataFromCache("item_index")()]
+                if not ability.canApply([self.player, stack, creatures[choice]]):
+                    print("You can not use that action on that target right now.\n")
+                    return
+                calc = creatures[choice].hp
+                ability.apply([self.player, stack, creatures[choice]])
+                calc -= creatures[choice].hp
+                self.popDataFromCache("waiting_for_turn")()
+                print()
+                print(f"{self.player.name} used {ability.getType().name} on {creatures[choice].name} for {calc} damage.")
                 self.popMenu()
                 self.popMenu()
     
     def displayTargets(self):
         creatures = self.battle_manager.battles[self.player.getData("in_battle")].participants
+        just = len(str(len(creatures)))
         for i, creature in enumerate(creatures):
-            print(f"{i + 1}) {creature.name} - ")
-        print(str(len(creatures) + 1) + ") Back")
+            print(f"{str(i + 1).rjust(just)}) {creature.name} - ")
+        print(str(len(creatures) + 1).rjust(just) + ") Back\n")
 
     def inputDungeonExploration(self):
+        if self.player.to_die:
+            self.popMenu()
+            self.clearData()
+            return
+        
+        room = self.map.getRoom(self.player_x, self.player_y)
+        print("\n" + room.getDescription())
+        
         command = input().split()
 
         if len(command) == 0:
@@ -618,15 +760,30 @@ class Game:
         elif command_key == "interact":
             room = self.map.getRoom(self.player_x, self.player_y)
             if len(command) < 2:
-                print("You need to add what to interact with.")
-            interaction = command[1]
-            for interactable in room.interactables:
-                if interactable.name == interaction:
-                    print()
+                print("You need to add what to interact with.\n")
+            else:
+                interaction = command[1]
+                for interactable in room.interactables:
+                    if interactable.name == interaction:
+                        interactions = [AbilityInstance(self.ability_types[data]) for data in interactable.uses]
+                        just = len(str(len(interactions)))
+                        for i, interaction in enumerate(interactions):
+                            print(f"{str(i + 1).rjust(just)}) {interaction.getType().name} - {interaction.getType().description}")
+                        print(f"{str(len(interactions) + 1).rjust(just)}) Back\n")
+                        while True:
+                            choice = intput("Option: ") - 1
+                            if choice == len(interactions):
+                                break
+                            elif 0 <= choice < len(interactions):
+                                if not interactions[choice].canApply([self.player, interactable, room]):
+                                    print("You can not do that interaction right now.\n")
+                                else:
+                                    interactions[choice].apply([self.player, interactable, room])
+                                    break
         elif command_key == "move":
             room = self.map.getRoom(self.player_x, self.player_y)
             if len(command) < 2:
-                print("Add a direction to move in.")
+                print("Add a direction to move in.\n")
             else:
                 direction = command[1]
                 if direction == "north":
@@ -647,13 +804,12 @@ class Game:
                         self.player_x += -1
                     elif direction == "west":
                         self.player_x -= -1
-            room = self.map.getRoom(self.player_x, self.player_y)
-            print(room.getDescription())
         elif command_key == "character":
             self.addMenu("character_sheet")()
 
         room = self.map.getRoom(self.player_x, self.player_y)
         room.update()
+        self.battle_manager.updateBattles(self)
 
     @classmethod
     def fromDict(cls, data):

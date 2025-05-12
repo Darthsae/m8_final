@@ -1,4 +1,5 @@
 {
     "name": "Base Game",
-    "description": ""
+    "description": "",
+    "default_to_on": true
 }

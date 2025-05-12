@@ -30,6 +30,9 @@ class ClassType:
     def maxLevel(self):
         return len(self.level_data)
     
+    def __repr__(self):
+        return self.description
+    
     @classmethod
     def fromDict(cls, game, id, data):
         class_type = cls(id, data["name"], data["description"], [LevelDetail.fromDict(game, level_data) for level_data in data["level_data"]])

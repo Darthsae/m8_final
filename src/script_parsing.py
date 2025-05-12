@@ -82,13 +82,38 @@ def parse(data, game):
                     for _ in range(amount):
                         targets[target].addEntity(entity_function())
                     return
-    if data_type == "change_max_hp":
+    elif data_type == "change_max_hp":
         target = data["target"]
         amount = data["amount"]
 
         def toReturn(targets):
             targets[target].max_hp += amount
             targets[target].hp += amount
+    elif data_type == "change_stack":
+        target = data["target"]
+        amount = data["amount"]
+
+        def toReturn(targets):
+            targets[target].changeStack(amount)
+    elif data_type == "add_interactable":
+        info = data["interactable"]
+        amount = data["amount"]
+        target = data["target"]
+        from .map import Interactable
+        def toReturn(targets):
+            for _ in range(amount):
+                targets[target].addInteractable(Interactable.fromDict(info))
+    elif data_type == "add_item":
+        target = data["target"]
+        amount = data["amount"]
+        item_type = data["item"]
+        from .components import Inventory
+        def toReturn(targets):
+            for component in targets[target].components:
+                if isinstance(component, Inventory):
+                    for _ in range(amount):
+                        component.addItem(game.item_types[item_type])
+
 
     return toReturn
 
@@ -145,7 +170,8 @@ def parseEntityEntry(data, game):
                 ]
             )
         if "actions" in overrides:
-            ...
+            for action in overrides["actions"]:
+                entity.addAction(game.ability_types[action])
         if "classes" in overrides:
             for class_data in overrides["classes"]:
                 class_type = game.class_types[class_data["class"]]

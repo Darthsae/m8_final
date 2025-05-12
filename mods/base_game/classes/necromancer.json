@@ -3,7 +3,7 @@
     "description": "Raise the dead.",
     "level_data": [
       {
-        "xp_cost": 0,
+        "xp_cost": 5,
         "features": [
           {
             "type": "change_max_hp",

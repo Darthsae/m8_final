@@ -105,10 +105,11 @@ def dummyTestSelfHeal(entity, action):
     post_hp = targets[0].hp
     return post_hp - pre_hp
     
-def dummyTestHurt(entity, action, target):
-    targets = [DummyEntity(entity), DummyEntity(target)]
-    pre_hp = targets[1].hp
-    action.apply(targets)
-    post_hp = targets[1].hp
+def dummyTestHurt(targets, action, target):
+    from .entity import EntityInstance
+    new_targets = [DummyEntity(entity_data) if isinstance(entity_data, EntityInstance) else entity_data for entity_data in targets]
+    pre_hp = new_targets[target].hp
+    action.apply(new_targets)
+    post_hp = new_targets[target].hp
     return pre_hp - post_hp
     

@@ -21,5 +21,12 @@
     "consumer",
     "creature"
   ],
-  "requirements": []
+  "requirements": [
+    {
+      "type": "check_data",
+      "present": false,
+      "data": "enveloped",
+      "target": 1
+    }
+  ]
 }

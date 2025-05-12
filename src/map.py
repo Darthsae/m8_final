@@ -4,11 +4,11 @@ import random
 
 
 class Interactable:
-    def __init__(self, name, description, tags, data):
+    def __init__(self, name, description, tags, uses, data):
         self.name = name
         self.description = description
         self.tags = tags
-        self.uses = []
+        self.uses = uses
         self.data = data
 
     def getDescription(self):
@@ -17,7 +17,7 @@ class Interactable:
     @classmethod
     def fromDict(cls, data):
         interactable = cls(
-            data["name"], data["descriptions"], data["tags"], data["data"]
+            data["name"], data["description"], data["tags"], data["uses"], data["data"]
         )
         return interactable
 
@@ -146,6 +146,9 @@ class RoomInstance:
 
     def addEntity(self, entity):
         self.entities.append(entity)
+
+    def addInteractable(self, interactable):
+        self.interactables.append(interactable)
 
     def update(self):
         to_kill = [participant for participant in self.entities if participant.to_die]

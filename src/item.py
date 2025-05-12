@@ -1,15 +1,15 @@
 class ItemType:
-    def __init__(self, id, name, description, tags, stack):
+    def __init__(self, id, name, description, tags, stack, uses):
         self.id = id
         self.name = name
         self.description = description
         self.tags = tags
         self.stack = stack
-        self.uses = []
+        self.uses = uses
         
     @classmethod
     def fromDict(cls, id, data):
-        item = cls(id, data["name"], data["description"], data["tags"], data["stack"])
+        item = cls(id, data["name"], data["description"], data["tags"], data["stack"], data["uses"])
         return item
 
 class ItemInstance:
@@ -27,6 +27,14 @@ class ItemInstance:
     
     def getType(self):
         return self.__item_type
+    
+    def changeStack(self, amount):
+        self.stack = min(max(self.stack + amount, 0), self.max_stack)
+        if self.stack == 0:
+            self = None
+    
+    def canAddStack(self, item):
+        return self.stack < self.max_stack
     
     @classmethod
     def fromDict(cls, data, item_types):

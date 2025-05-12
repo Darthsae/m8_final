@@ -1,0 +1,19 @@
+{
+  "name": "Slash",
+  "description": "Slash at your enemies for 10 damage.",
+  "effects": [
+    {
+      "type": "change_hp",
+      "respect_cap": true,
+      "xp_target": 0,
+      "target": 2,
+      "amount": -10
+    }
+  ], 
+  "targets": [
+    "consumer",
+    "item",
+    "creature"
+  ],
+  "requirements": []
+}

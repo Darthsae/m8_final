@@ -49,6 +49,8 @@ class Restrictions:
         self.excluded = excluded
     
     def score(self, tags):
+        """Scores a set of tags validity for the set of restrictions.
+        """
         requirements = set(self.required)
         score = 1
         for tag in tags:

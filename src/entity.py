@@ -41,7 +41,7 @@ class EntityInstance:
         self.tags = self.__entity_type.tags
         self.max_hp = self.__entity_type.hp
         self.hp = self.__entity_type.hp
-        self.components = self.__entity_type.components
+        self.components = self.__entity_type.components.copy()
         self.actions = []
         self.__classes = []
         self.xp = self.__entity_type.xp
