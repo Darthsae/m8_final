@@ -114,6 +114,15 @@
                     "percent_of_missing_hp": 1.0
                   }
                 }
+              },
+              {
+                "type": "inventory",
+                "items": [
+                  {
+                    "type": "small_xp_potion",
+                    "stack": 3
+                  }
+                ]
               }
             ],
             "actions": [],
@@ -136,6 +145,8 @@
       "mini_boss_room"
     ],
     "allowed": [],
-    "excluded": []
+    "excluded": [
+      "no_hostile_entities"
+    ]
   }
 }

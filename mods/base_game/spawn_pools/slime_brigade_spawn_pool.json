@@ -111,6 +111,14 @@
                     "percent_of_missing_hp": 0.0
                   }
                 }
+              },
+              {
+                "type": "inventory",
+                "items": [
+                  {
+                    "type": "health_potion"
+                  }
+                ]
               }
             ],
             "actions": [

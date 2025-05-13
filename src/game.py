@@ -117,6 +117,7 @@ class Game:
         self.battle_manager = BattleManager()
         self.menu_stack = []
         self.menu_cache = {}
+        self.saves = []
 
         self.menus = {}
         self.rebuildMenus()
@@ -242,8 +243,88 @@ class Game:
             "inspect_item": MenuType(
                 self.displayInspectItem,
                 self.inputInspectItem
+            ),
+            "saves": MenuType(
+                self.displaySaves,
+                self.inputSaves
             )
         }
+
+    def displaySaves(self):
+        print("\nSaves: \n")
+        self.saves = [item for item in os.scandir("saves") if item.is_file() and item.name[-5:] == ".json"]
+        just = len(str(len(self.saves)))
+        for i, save in enumerate(self.saves):
+            print(f"{str(i + 1).rjust(just)}) {save.name[:-5]}")
+        print(str(len(self.saves) + 1).rjust(just) + ") Back\n")
+
+    def inputSaves(self):
+        choice = intput("Choice: ") - 1
+
+        if choice == len(self.saves):
+            self.popMenu()
+        elif 0 <= choice < len(self.saves):
+            print()
+            print("1) Load")
+            print("2) Rename")
+            print("3) Delete")
+            print("4) Display Player Info")
+            print("5) Back\n")
+            while True:
+                persona_non_grata = intput("Option: ") - 1
+                if persona_non_grata == 0:
+                    with open(self.saves[choice].path, "r") as f:
+                        self.loadFromDict(json.load(f))
+                    break
+                elif persona_non_grata == 1:
+                    strung = self.player.name
+                    while True:
+                        temp = input("Save Name (Alpha numeric to avoid crashes): ")
+                        if temp.replace("_", "u").isalnum():
+                            strung = temp
+                            break
+                    path = f"saves/{strung}.json"
+                    os.rename(self.saves[choice].path, path)
+                    self.popMenu()
+                    break
+                elif persona_non_grata == 2:
+                    os.remove(self.saves[choice].path)
+                    self.popMenu()
+                    break
+                elif persona_non_grata == 3:
+                    with open(self.saves[choice].path, "r") as f:
+                        data = json.load(f)
+                    player = EntityInstance.fromDict(data["player"], self)
+                    player_x = data["player_x"]
+                    player_y = data["player_y"]
+                    self.map.loadFromDict(data["map"], self)
+                    print(player.detailedBattleDescription())
+                    print("Inventory: ")
+                    index_of_inventory = 0
+                    for i, component in enumerate(player.components):
+                        if isinstance(component, Inventory):
+                            index_of_inventory = i
+                    just = len(str(len(player.components[index_of_inventory].items)))
+                    for i, item in enumerate(player.components[index_of_inventory].items):
+                        if item != None:
+                            print(f"{str(i + 1).rjust(just)}. {item.name} ({item.stack}/{item.max_stack})")
+                            print((" " * (just + 2)) + "[" + ", ".join(map(str.capitalize, item.tags)) + "]\n")
+                            print((" " * (just + 2)) + item.description)
+                        else:
+                            print(f"{str(i + 1).rjust(just)}. None")
+                    print("\nAbilities: ")
+                    just = len(str(len(player.actions)))
+                    for i, ability in enumerate(player.actions):
+                        print(f"{str(i + 1).rjust(just)}. {ability.getType().name} - {ability.getType().description}")
+                    print()
+                    print(f"Positon ({player_x}, {player_y}), {len(self.map.getRooms())} rooms explored.\n")
+                    self.map.reset()
+                    del player, player_x, player_y
+                    break
+                elif persona_non_grata == 4:
+                    self.popMenu()
+                    break
+
 
     def displayCharacterSheet(self):
         print(self.player.detailedBattleDescription())
@@ -675,7 +756,6 @@ class Game:
                         self.popMenu()
                         break
             
-    
     def displayListItems(self):
         index_of_inventory = 0
         for i, component in enumerate(self.player.components):
@@ -749,11 +829,22 @@ class Game:
 
         command_key = command[0]
 
-        if command_key == "saves":
-            self.addMenu("")()
+        if command_key == "save":
+            strung = self.player.name
+            while True:
+                temp = input("Save Name (Alpha numeric to avoid crashes): ")
+                if temp.replace("_", "u").isalnum():
+                    strung = temp
+                    break
+            path = f"saves/{strung}.json"
+            with open(path, "w") as f:
+                json.dump(self.saveToDict(), f)
+            print("Game saved.")
+            return
         elif command_key == "quit":
             self.popMenu()
             self.clearData()
+            return
         elif command_key == "look":
             room = self.map.getRoom(self.player_x, self.player_y)
             print(room.getDescription())
@@ -762,7 +853,7 @@ class Game:
             if len(command) < 2:
                 print("You need to add what to interact with.\n")
             else:
-                interaction = command[1]
+                interaction = " ".join(command[1::])
                 for interactable in room.interactables:
                     if interactable.name == interaction:
                         interactions = [AbilityInstance(self.ability_types[data]) for data in interactable.uses]
@@ -806,14 +897,39 @@ class Game:
                         self.player_x -= -1
         elif command_key == "character":
             self.addMenu("character_sheet")()
+            return
 
         room = self.map.getRoom(self.player_x, self.player_y)
         room.update()
         self.battle_manager.updateBattles(self)
 
-    @classmethod
-    def fromDict(cls, data):
-        return cls(**data)
+    def loadFromDict(self, data):
+        self.player = EntityInstance.fromDict(data["player"], self)
+        self.player.components.remove(None)
+        self.player.components.append(FunctionHolder(None, self.combatMenu))
+        self.player_x = data["player_x"]
+        self.player_y = data["player_y"]
+        self.map.loadFromDict(data["map"], self)
+        self.battle_manager = BattleManager.fromDict(data["battle_manager"], self)
+        self.player.battleLoad()
+        self.map.battleLoad()
+        self.menu_cache = data["menu_cache"]
+        self.menu_stack = [MenuInstance(self.menus[entry]) for entry in data["menu_stack"]]
 
-    def toDict(self):
-        return {}
+    def findMenuString(self, menu):
+        typo = menu.getType()
+        for key, value in self.menus.items():
+            if value == typo:
+                return key
+        return "main_menu"
+
+    def saveToDict(self):
+        return {
+            "player": self.player.toDict(),
+            "player_x": self.player_x,
+            "player_y": self.player_y,
+            "map": self.map.toDict(),
+            "battle_manager": self.battle_manager.toDict(),
+            "menu_cache": self.menu_cache,
+            "menu_stack": list(map(self.findMenuString, self.menu_stack))
+        }

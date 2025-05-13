@@ -1,0 +1,31 @@
+{
+  "name": "Get Item",
+  "description": "Get the item.",
+  "effects": [
+    {
+      "type": "add_item",
+      "item": {
+        "type": "get_data",
+        "data": "item_type",
+        "target": 1
+      },
+      "amount": {
+        "type": "get_data",
+        "data": "item_amount",
+        "target": 1
+      },
+      "target": 0
+    },
+    {
+      "type": "remove_interactable",
+      "interactable": 1,
+      "room": 2
+    }
+  ],
+  "targets": [
+    "consumer",
+    "interactable",
+    "room"
+  ],
+  "requirements": []
+}

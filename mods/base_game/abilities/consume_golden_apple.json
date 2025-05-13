@@ -1,0 +1,21 @@
+{
+  "name": "Consume Golden Fruit",
+  "description": "Partake in the Golden Fruit.",
+  "effects": [
+    {
+      "type": "change_xp",
+      "target": 0,
+      "amount": 250
+    },
+    {
+      "type": "change_stack",
+      "amount": -1,
+      "target": 1
+    }
+  ],
+  "targets": [
+    "consumer",
+    "item"
+  ],
+  "requirements": []
+}

@@ -1,0 +1,49 @@
+{
+  "name": "Take Golden Apple",
+  "description": "Take a golden apple from the tree of knowledge.",
+  "effects": [
+    {
+      "type": "add_item",
+      "item": "golden_apple",
+      "amount": 1,
+      "target": 0
+    },
+    {
+      "type": "add_data",
+      "decay": 0,
+      "data": "apples",
+      "value": {
+        "type": "add",
+        "value_one": {
+          "type": "get_data",
+          "data": "apples",
+          "target": 1
+        },
+        "value_two": -1
+      },
+      "target": 1
+    }
+  ],
+  "targets": [
+    "consumer",
+    "interactable",
+    "room"
+  ],
+  "requirements": [
+    {
+      "type": "check_data",
+      "present": true,
+      "data": "apples",
+      "target": 1
+    },
+    {
+      "type": "greater_than",
+      "value_one": {
+        "type": "get_data",
+        "data": "apples",
+        "target": 1
+      },
+      "value_two": 0
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "name": "tree_of_knowledge_spawn_pool",
+  "effects": [
+    {
+      "type": "add_interactable",
+      "interactable": {
+        "name": "Tree of Knowledge",
+        "description": "A large tree with luscious golden apples hanging from it's branches.",
+        "tags": [],
+        "uses": [
+          "tree_of_knowledge_take_apple"
+        ],
+        "data": {
+          "apples": 2
+        }
+      },
+      "amount": 1,
+      "target": 0
+    }
+  ],
+  "conditions": [],
+  "restrictions": {
+    "required": [
+      "boon_room",
+      "fae"
+    ],
+    "allowed": [],
+    "excluded": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Rest in the Rejuvinating Springs",
+  "description": "Take a rest in the Rejuvinating Springs and mend any wounds.",
+  "effects": [
+    {
+      "type": "change_hp",
+      "respect_cap": true,
+      "xp_target": -1,
+      "target": 0,
+      "amount": 150
+    }
+  ],
+  "targets": [
+    "consumer",
+    "interactable",
+    "room"
+  ],
+  "requirements": []
+}

@@ -10,7 +10,8 @@
       "no_hostile_entities"
     ],
     "excluded": [
-      "mini_boss_room"
+      "mini_boss_room",
+      "boon_room"
     ]
   }
 }

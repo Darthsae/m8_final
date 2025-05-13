@@ -1,0 +1,13 @@
+{
+  "name": "Golden Apple",
+  "description": "A luscious Golden Apple from the Tree of Knowledge.",
+  "tags": [
+    "apple",
+    "fae",
+    "xp"
+  ],
+  "stack": 5,
+  "uses": [
+    "consume_golden_apple"
+  ]
+}

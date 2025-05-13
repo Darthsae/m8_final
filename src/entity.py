@@ -131,12 +131,28 @@ class EntityInstance:
 
     def addAction(self, action_type):
         self.actions.append(AbilityInstance(action_type))
+    
+    def hasAction(self, action_type):
+        for action in self.actions:
+            if action.getType() == action_type:
+                return True
+        return False
+    
+    def battleLoad(self):
+        if self.hasData("in_battle"):
+            self.game.battle_manager.joinBattle(self, self.getData("in_battle"))
 
     def flee(self):
+        """Have the entity leave a battle if it is in one.
+        """
         if self.hasData("in_battle"):
             self.game.battle_manager.leaveBattle(self, self.getData("in_battle"))
 
     def changeRoom(self, x, y): ...
+
+    def death(self, room):
+        for component in self.components:
+            component.death(room, self)
 
     def hasData(self, key):
         return key in self.data
@@ -162,14 +178,16 @@ class EntityInstance:
         return self.__entity_type
 
     @classmethod
-    def fromDict(cls, data, entity_types):
-        entity = cls(entity_types[data["type"]])
+    def fromDict(cls, data, game):
+        entity = cls(game, game.entity_types[data["type"]] if data["type"] != "" else EntityInstance.NULL_ENTITY_TYPE)
         if "name" in data:
             entity.name = data["name"]
         if "description" in data:
             entity.description = data["description"]
         if "tags" in data:
             entity.tags = data["tags"]
+        if "max_hp" in data:
+            entity.max_hp = data["max_hp"]
         if "hp" in data:
             entity.hp = data["hp"]
         if "xp" in data:
@@ -178,12 +196,15 @@ class EntityInstance:
             entity.speed = data["speed"]
         if "components" in data:
             entity.components = [
-                componentFromData(component_data)
+                componentFromData(component_data, game)
                 for component_data in data["components"]
             ]
+        if "actions" in data:
+            for action in data["actions"]:
+                entity.addAction(game.ability_types[action])
         if "classes" in data:
             entity.__classes = [
-                ClassInstance.fromDict(class_data) for class_data in data["classes"]
+                ClassInstance.fromDict(class_data, game.class_types) for class_data in data["classes"]
             ]
         if "faction" in data:
             entity.faction = data["faction"]
@@ -197,12 +218,14 @@ class EntityInstance:
             "name": self.name,
             "description": self.description,
             "tags": self.tags,
+            "max_hp": self.max_hp,
             "hp": self.hp,
             "xp": self.xp,
             "speed": self.speed,
             "components": [
                 component_data.toDict() for component_data in self.components
             ],
+            "actions": [action_data.getType().id for action_data in self.actions],
             "classes": [class_data.toDict() for class_data in self.__classes],
             "faction": self.faction,
             "data": self.data,

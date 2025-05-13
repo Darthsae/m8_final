@@ -1,0 +1,9 @@
+{
+    "name": "Enchanted Villa",
+    "description": "The Enchanted Villa is a beatiful garden area with stone cobble path throughout.",
+    "tags": [
+        "boon_room",
+        "fae",
+        "no_hostile_entities"
+    ]
+}

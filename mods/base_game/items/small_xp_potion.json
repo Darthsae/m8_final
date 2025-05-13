@@ -1,0 +1,13 @@
+{
+  "name": "Small XP Potion",
+  "description": "A small green potion that grants between 5-25 XP.",
+  "tags": [
+    "small",
+    "potion",
+    "xp"
+  ],
+  "stack": 15,
+  "uses": [
+    "small_xp_potion_xp"
+  ]
+}

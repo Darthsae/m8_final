@@ -1,0 +1,25 @@
+{
+  "name": "Drink XP",
+  "description": "Grants between 5-25 XP.",
+  "effects": [
+    {
+      "type": "change_xp",
+      "target": 0,
+      "amount": {
+        "type": "random_int",
+        "lower": 5,
+        "upper": 25
+      }
+    },
+    {
+      "type": "change_stack",
+      "amount": -1,
+      "target": 1
+    }
+  ],
+  "targets": [
+    "consumer",
+    "item"
+  ],
+  "requirements": []
+}

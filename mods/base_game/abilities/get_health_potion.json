@@ -7,6 +7,11 @@
       "item": "health_potion",
       "amount": 1,
       "target": 0
+    },
+    {
+      "type": "remove_interactable",
+      "interactable": 1,
+      "room": 2
     }
   ],
   "targets": [

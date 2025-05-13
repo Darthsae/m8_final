@@ -31,6 +31,17 @@ class BattleManager:
         # TODO: Check for any invalid battles and end them.
         for key in to_nuke:
             self.battles.pop(key)
+    
+    @classmethod
+    def fromDict(cls, data, game):
+        battle_manager = cls()
+        battle_manager.battles = {key: BattleInstance.fromDict(value, game) for key, value in data["battles"].items()}
+        return battle_manager
+
+    def toDict(self):
+        return {
+            "battles": {key: battle.toDict() for key, battle in self.battles.items()}
+        }
 
 class BattleInstance:
     def __init__(self, id, room):
@@ -48,3 +59,15 @@ class BattleInstance:
     
     def isOver(self):
         return len(self.participants) == 0
+    
+    @classmethod
+    def fromDict(cls, data, game):
+        battle = cls(data["id"], game.map.getRoom(data["room_x"], data["room_y"]))
+        return battle
+    
+    def toDict(self):
+        return {
+            "id": self.id,
+            "room_x": self.room.position_x,
+            "room_y": self.room.position_y
+        }

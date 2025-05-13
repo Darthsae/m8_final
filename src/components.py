@@ -12,6 +12,9 @@ class Component:
     def battle(self, battle, entity, opponents):
         pass
 
+    def death(self, room, entity):
+        pass
+
     @classmethod
     def fromDict(cls, data):
         return cls(**data)
@@ -61,18 +64,28 @@ class Inventory(Component):
         for i in range(len(self.items)):
             if isinstance(self.items[i], ItemInstance) and self.items[i].stack == 0:
                 self.items[i] = None
+    
+    def death(self, room, entity):
+        from .map import Interactable
+        for item in self.items:
+            if isinstance(item, ItemInstance):
+                drop = Interactable(str(item), item.description, ["item"], ["get_item"], {
+                    "item_type": item.getType().id,
+                    "item_amount": item.stack
+                })
+                room.addInteractable(drop)
 
     @classmethod
-    def fromDict(cls, data):
+    def fromDict(cls, data, game):
         inventory = cls(0)
         if "items" in data:
             inventory.items = [
-                ItemInstance.fromDict(item_instance) for item_instance in data["items"]
+                ItemInstance.fromDict(item_instance, game.item_types) if item_instance != None else None for item_instance in data["items"]
             ]
         return inventory
 
     def toDict(self):
-        return {"type": "inventory", "items": [ItemInstance.fromDict()]}
+        return {"type": "inventory", "items": [item.toDict() if item != None else None for item in self.items]}
 
 
 class AI(Component):
@@ -193,7 +206,7 @@ class AI(Component):
                             "kills": 1.0,
                             "percent_of_total_hp": 1.0,
                             "percent_of_remaining_hp": 1.0,
-                        },
+                        }
                     },
                     "damage_target_can_do": {
                         "overtime": {
@@ -207,7 +220,7 @@ class AI(Component):
                             "kills": 1.0,
                             "percent_of_total_hp": 1.0,
                             "percent_of_remaining_hp": 1.0,
-                        },
+                        }
                     },
                     "healing_target_can_do": {
                         "others": {
@@ -224,7 +237,7 @@ class AI(Component):
                                 "percent_of_missing_hp": 1.0,
                                 "percent_of_remaining_hp": 1.0,
                                 "percent_of_max_hp": 1.0,
-                            },
+                            }
                         },
                         "self": {
                             "overtime": {
@@ -238,9 +251,9 @@ class AI(Component):
                                 "percent_of_missing_hp": 1.0,
                                 "percent_of_remaining_hp": 1.0,
                                 "percent_of_max_hp": 1.0,
-                            },
-                        },
-                    },
+                            }
+                        }
+                    }
                 },
                 "heal": {
                     "others": {
@@ -257,7 +270,7 @@ class AI(Component):
                             "percent_of_missing_hp": 1.0,
                             "percent_of_remaining_hp": 1.0,
                             "percent_of_max_hp": 1.0,
-                        },
+                        }
                     },
                     "self": {
                         "overtime": {
@@ -269,17 +282,21 @@ class AI(Component):
                             "percent_of_total_hp": 1.0,
                             "percent_of_missing_hp": 1.0,
                             "percent_of_remaining_hp": 1.0,
-                        },
-                    },
+                        }
+                    }
                 },
-                "flee": {"percent_of_missing_hp": 1.0},
-            },
+                "flee": {
+                    "percent_of_missing_hp": 1.0
+                }
+            }
         }
 
 
-def componentFromData(data):
+def componentFromData(data, game):
+    if "type" not in data:
+        return None
     type = data["type"]
     if type == "inventory":
-        return Inventory.fromDict(data)
+        return Inventory.fromDict(data, game)
     elif type == "ai":
         return AI.fromDict(data)

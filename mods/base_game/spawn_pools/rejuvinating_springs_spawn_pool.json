@@ -1,0 +1,27 @@
+{
+  "name": "rejuvinating_springs_spawn_pool",
+  "effects": [
+    {
+      "type": "add_interactable",
+      "interactable": {
+        "name": "Rejuvinating Springs",
+        "description": "Lush springs that mend wounds and broken bones.",
+        "tags": [],
+        "uses": [
+          "rejuvinating_springs_rejuvinate"
+        ],
+        "data": {}
+      },
+      "amount": 1,
+      "target": 0
+    }
+  ],
+  "conditions": [],
+  "restrictions": {
+    "required": [
+      "boon_room"
+    ],
+    "allowed": [],
+    "excluded": []
+  }
+}

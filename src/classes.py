@@ -12,7 +12,9 @@ class LevelDetail:
         for ability in self.abilities:
             behavior = ability["type"]
             if behavior == "add":
-                apply_to.addAction(ability_types[ability["ability"]])
+                ability_instance = ability_types[ability["ability"]]
+                if not apply_to.hasAction(ability_instance):
+                    apply_to.addAction(ability_instance)
     
     @classmethod
     def fromDict(cls, game, data):

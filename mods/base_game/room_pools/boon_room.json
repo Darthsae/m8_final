@@ -1,0 +1,29 @@
+{
+  "name": "boon_room",
+  "rooms": [
+    "enchanted_villa"
+  ],
+  "tags": [],
+  "conditions": [
+    {
+      "type": "room_chain",
+      "room_pool": "boon_room",
+      "min": 0,
+      "max": 1,
+      "position": {
+        "type": "target",
+        "target": 1
+      },
+      "target": 0
+    }
+  ],
+  "restrictions": {
+    "required": [],
+    "allowed": [
+      "connecting_room"
+    ],
+    "excluded": [
+      "starting_room"
+    ]
+  }
+}
