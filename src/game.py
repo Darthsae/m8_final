@@ -497,6 +497,7 @@ class Game:
         )
         self.player.faction = "player"
         self.map.setRoom(0, 0, "starting_room")
+        print("Use 'help' to see a list of valid commands.")
 
     def mods(self):
         """Returns the mods.
@@ -1000,6 +1001,14 @@ class Game:
         elif command_key == "character":
             self.addMenu("character_sheet")()
             return
+        elif command_key == "help":
+            print("help - Displays this list.")
+            print("move (north/south/east/west) - Moves to another room.")
+            print("save - Saves the game.")
+            print("quit - Quits the game.")
+            print("look - Gets a description of the room you are currently in.")
+            print("interact (name of interactable) - Opens the interaction menu for an interactable in the current room.")
+            print("character - Opens the character sheet.")
 
         room = self.map.getRoom(self.player_x, self.player_y)
         room.update()
