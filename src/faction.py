@@ -8,10 +8,14 @@ class Faction:
         
     @classmethod
     def fromDict(cls, id, data):
+        """Creates faction from a dictionary.
+        """
         faction = cls(id, data["name"], data["hostile"])
         return faction
     
     def toDict(self):
+        """Creates a dictonary from the faction.
+        """
         return {
             "name": self.name,
             "hostile": self.hostile

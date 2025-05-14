@@ -3,6 +3,8 @@ import random
 
 
 def parse(data, game):
+    """Parses a dictonary into the proper function and returns it.
+    """
     data_type = data["type"]
 
     if data_type == "change_hp":
@@ -136,6 +138,8 @@ def parse(data, game):
 
 
 def parseValue(data):
+    """Parses a dictionary into a function returning a value.
+    """
     if isinstance(data, dict) and "type" in data:
         data_type = data["type"]
         if data_type == "target":
@@ -179,6 +183,8 @@ def parseValue(data):
 
 
 def parseEntityEntry(data, game):
+    """Parses an entity from a dictionary entity and returns a function to make it.
+    """
     weight = data["weight"]
     entity_type = game.entity_types[data["type"]]
     overrides = data["overrides"]

@@ -64,9 +64,13 @@ class Restrictions:
     
     @classmethod
     def fromDict(cls, data):
+        """Creates a restriction set from a dictionary.
+        """
         return cls(data["required"], data["allowed"], data["excluded"])
 
 def adjacentPositions(position):
+    """Returns a list of adjacent positions to the position.
+    """
     return [
         (position[0] + 1, position[1]    ),
         (position[0] - 1, position[1]    ),
@@ -75,9 +79,13 @@ def adjacentPositions(position):
     ]
 
 def indexOfIndexable(index):
+    """Returns a function which gives the item at an index of an indexable.
+    """
     def toReturn(indexable):
         return indexable[index]
     return toReturn
 
 def longToString(long):
+    """Converts a long to a string of characters.
+    """
     return chr(long >> 56 & 0xFF) + chr(long >> 48 & 0xFF) + chr(long >> 40 & 0xFF) + chr(long >> 32 & 0xFF) + chr(long >> 24 & 0xFF) + chr(long >> 16 & 0xFF) + chr(long >> 8 & 0xFF) + chr(long & 0xFF)

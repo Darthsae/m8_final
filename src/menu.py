@@ -8,10 +8,16 @@ class MenuInstance:
         self.__menu_type = menu_type
     
     def displayMenu(self):
+        """Displays the menu.
+        """
         self.__menu_type.display_callback()
     
     def inputMenu(self):
+        """Handles the input for the menu.
+        """
         self.__menu_type.input_callback()
     
     def getType(self):
+        """Returns the Menu Type of the menu.
+        """
         return self.__menu_type

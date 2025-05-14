@@ -12,9 +12,13 @@ class Interactable:
         self.data = data
 
     def hasData(self, key):
+        """Checks if the key is in the interactables data.
+        """
         return key in self.data
 
     def getData(self, key):
+        """Returns the value of the key in the interactables data.
+        """
         return self.data[key]
 
     def addData(self, key, value, _ = None):
@@ -23,19 +27,27 @@ class Interactable:
         self.data[key] = value
 
     def removeData(self, key):
+        """Remove data from the interactable.
+        """
         self.data.pop(key)
 
     def getDescription(self):
+        """Return the display description of the interactable.
+        """
         return " ".join(["There is a", self.name, "in the room."])
 
     @classmethod
     def fromDict(cls, data):
+        """Create an interactable from a dictionary.
+        """
         interactable = cls(
             data["name"], data["description"], data["tags"], data["uses"], data["data"]
         )
         return interactable
 
     def toDict(self):
+        """Convert the interactable to a dictionary.
+        """
         return {
             "name": self.name,
             "description": self.description,
@@ -54,6 +66,8 @@ class RoomType:
 
     @classmethod
     def fromDict(cls, id, data):
+        """
+        """
         room_type = cls(id, data["name"], data["description"], data["tags"])
 
         return room_type
@@ -69,6 +83,8 @@ class RoomPool:
         self.restrictions = restrictions
 
     def getScore(self, map, position):
+        """Get the score for this 
+        """
         for condition in self.conditions:
             if not condition([map, position]):
                 return 0
@@ -79,6 +95,8 @@ class RoomPool:
         return self.restrictions.score(tags)
 
     def generate(self, map):
+        """Generate a roompool and return the selected room with properly applied spawn pools.
+        """
         room = RoomInstance(map.room_types[random.choice(self.rooms)])
         room.tags.extend(self.tags)
 
@@ -95,6 +113,8 @@ class RoomPool:
 
     @classmethod
     def fromDict(cls, game, id, data):
+        """Load a room pool from a dict.
+        """
         room_pool = cls(
             id,
             data["name"],
@@ -117,17 +137,23 @@ class SpawnPool:
         self.restrictions = restrictions
 
     def getScore(self, room):
+        """Get the validation score for this spawnpool.
+        """
         for condition in self.conditions:
             if not condition([room]):
                 return 0
         return self.restrictions.score(room.tags)
 
     def applyTo(self, room):
+        """Apply the spawnpool to a room.
+        """
         for effect in self.effects:
             effect([room])
 
     @classmethod
     def fromDict(cls, game, id, data):
+        """Load a SpawnPool from a dictionary.
+        """
         spawn_pool = cls(id, data["name"], Restrictions.fromDict(data["restrictions"]))
         spawn_pool.effects = [parse(effect, game) for effect in data["effects"]]
         spawn_pool.conditions = [
@@ -146,13 +172,19 @@ class RoomInstance:
         self.position_y = 0
 
     def getType(self):
+        """Get the RoomType that this RoomInstance is.
+        """
         return self.__room_type
 
     def battleLoad(self):
+        """Called after the battle_manager has been loaded.
+        """
         for entity in self.entities:
             entity.battleLoad()
 
     def getDescription(self):
+        """Get the description of the room for display.
+        """
         to_return = f"{self.__room_type.name}\n{self.__room_type.description}\n"
         if len(self.interactables) > 0:
             to_return += (
@@ -171,15 +203,23 @@ class RoomInstance:
         return to_return
 
     def addEntity(self, entity):
+        """Add an entity to the room.
+        """
         self.entities.append(entity)
 
     def addInteractable(self, interactable):
+        """Add an interactable to the room.
+        """
         self.interactables.append(interactable)
 
     def removeInteractable(self, interactable):
+        """Remove an interactable from the room.
+        """
         self.interactables.remove(interactable)
 
     def update(self):
+        """Update the room instance.
+        """
         to_kill = [participant for participant in self.entities if participant.to_die]
         for dead in to_kill:
             if dead.hasData("in_battle"):
@@ -191,6 +231,8 @@ class RoomInstance:
 
     @classmethod
     def fromDict(cls, data, game):
+        """Create a room instance from a dictionary.
+        """
         from .entity import EntityInstance
         room_instance = cls(game.map.room_types[data["type"]])
         if "interactables" in data:
@@ -210,6 +252,8 @@ class RoomInstance:
         return room_instance
 
     def toDict(self):
+        """Get the dictionary representing this room instance.
+        """
         return {
             "type": self.__room_type.id,
             "interactables": [
@@ -228,14 +272,19 @@ class Map:
         self.room_types = {}
 
     def addRoomPool(self, room_pool):
+        """Add a room pool to the map's selections.
+        """
         self.room_pool_types[room_pool.id] = (room_pool, 0)
 
     def setRoom(self, x, y, room_pool):
+        """Public method to set a room_pool at a room."""
         self.__assignRoom(
             (x, y), self.room_pool_types[room_pool][0].generate(self), room_pool
         )
 
     def getRoom(self, x, y):
+        """Returns the room at the position or None if there isn't one.
+        """
         if not (x, y) in self.__rooms:
             # Generate Room
             options = [
@@ -253,6 +302,8 @@ class Map:
         return self.__rooms[(x, y)][0]
 
     def __assignRoom(self, position, room, room_pool):
+        """Used to set a room at a position, for internal use only.
+        """
         room.position_x = position[0]
         room.position_y = position[1]
         self.__rooms[position] = (room, room_pool)
@@ -262,6 +313,8 @@ class Map:
         )
 
     def roomChain(self, position, room_pool):
+        """Gets all chained rooms of a room_pool type connected to a point.
+        """
         count = 0
         searched = set()
         to_search = set(adjacentPositions(position))
@@ -277,32 +330,48 @@ class Map:
         return count
 
     def roomPoolCount(self, room_pool):
+        """Get the number of room_pools for a sepcific room_pool in the map.
+        """
         return self.room_pool_types[room_pool][1]
 
     def getRooms(self):
+        """Returns the rooms in the map.
+        """
         return self.__rooms
     
     def battleLoad(self):
+        """Called to make battles loaded properly. Do after loading the battle manager.
+        """
         for room, _ in self.__rooms.values():
             room.battleLoad()
 
     def reset(self):
+        """Reset all of the instance data.
+        """
         self.__rooms = {}
         for key in self.room_pool_types:
             self.room_pool_types[key] = (self.room_pool_types[key][0], 0)
 
     def loadFromDict(self, data, game):
+        """Load the map from a dictionary.
+        """
         for key, value in data["rooms"].items():
             self.__assignRoom(stringToPosition(key), RoomInstance.fromDict(value[0], game), value[1])
 
     def toDict(self):
+        """Creates a dict from the state of the map.
+        """
         return {
             "rooms": {positionToString(key): [value[0].toDict(), value[1]] for key, value in self.__rooms.items()},
         }
 
 def positionToString(position):
+    """Converts a position to a string.
+    """
     return f"{position[0]},{position[1]}"
 
 def stringToPosition(string):
+    """Converts a string to a position.
+    """
     data = string.split(",")
     return (int(data[0]), int(data[1]))

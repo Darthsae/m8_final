@@ -18,6 +18,8 @@ class EntityType:
 
     @classmethod
     def fromDict(cls, id, data):
+        """Load an entity type from a dictionary.
+        """
         entity_type = cls(
             id,
             data["name"],
@@ -51,34 +53,50 @@ class EntityInstance:
         self.to_die = False
 
     def getDescription(self):
+        """Return the description of the entity.
+        """
         return " ".join(["There is a", self.name, "in the room."])
 
     def getClassesDisplayString(self):
+        """Return classes display string.
+        """
         string = ""
         for class_data in self.__classes:
             string += class_data.getType().name + " " + str(class_data.level + 1) + "\n"
         return string
     
     def getClassesLineString(self):
+        """Return classes display string for inline display.
+        """
         string = ", ".join([f"{class_data.getType().name} {class_data.level + 1}" for class_data in self.__classes])
         return string
 
     def hasFaction(self):
+        """Check if entity has a faction.
+        """
         return self.faction != ""
 
     def getFaction(self):
+        """Get the faction of the entity.
+        """
         return self.game.factions[self.faction]
 
     def isHostile(self, target):
+        """Check if entity is hostile to another.
+        """
         if self.hasFaction() and target.hasFaction():
             return target.faction in self.getFaction().hostile
         else:
             return False
 
     def addXP(self, amount):
+        """Add xp to the entity.
+        """
         self.xp += amount
 
     def update(self, room):
+        """Handle game update for entity.
+        """
         for key in list(self.data.keys()):
             value = self.data.pop(key)
             if value[1] == 0:
@@ -91,22 +109,30 @@ class EntityInstance:
             component.update(room, self)
 
     def battleUpdate(self, battle, opponents):
+        """Handle battle update for entity.
+        """
         for component in self.components:
             component.battle(battle, self, opponents)
 
     def levelInClass(self, class_type):
+        """Get entities current level in a class type, -1 for none.
+        """
         for class_instance in self.__classes:
             if class_instance.getType() == class_type:
                 return class_instance.level
         return -1
     
     def nextXPInClass(self, class_type):
+        """Get the next amount of xp to get another level in a class.
+        """
         for class_instance in self.__classes:
             if class_instance.getType() == class_type:
                 return class_type.level_data[class_instance.level + 1].xp_cost if class_instance.level + 1 < class_type.maxLevel() else -1
         return class_type.level_data[0].xp_cost
 
     def gainClassLevel(self, class_type, ability_types):
+        """Gain one leve in a class for the entity.
+        """
         for class_instance in self.__classes:
             if class_instance.getType() == class_type:
                 level = class_instance.level + 1
@@ -121,6 +147,8 @@ class EntityInstance:
         self.__classes.append(class_instance)
 
     def changeHP(self, amount, respect_cap):
+        """Change the entities hp, respecting cap if specified.
+        """
         pre_hp = max(self.hp, self.max_hp)
         self.hp = max(self.hp + amount, 0)
         if respect_cap:
@@ -130,15 +158,21 @@ class EntityInstance:
             return True
 
     def addAction(self, action_type):
+        """Add an action to the entity.
+        """
         self.actions.append(AbilityInstance(action_type))
     
     def hasAction(self, action_type):
+        """Check if entity has an action of a type.
+        """
         for action in self.actions:
             if action.getType() == action_type:
                 return True
         return False
     
     def battleLoad(self):
+        """Battle load, called after loading battle manager to prevent crashes.
+        """
         if self.hasData("in_battle"):
             self.game.battle_manager.joinBattle(self, self.getData("in_battle"))
 
@@ -148,25 +182,40 @@ class EntityInstance:
         if self.hasData("in_battle"):
             self.game.battle_manager.leaveBattle(self, self.getData("in_battle"))
 
-    def changeRoom(self, x, y): ...
+    def changeRoom(self, x, y): 
+        """Deprecated.
+        """
+        ...
 
     def death(self, room):
+        """Handles the entity dying in a room.
+        """
         for component in self.components:
             component.death(room, self)
 
     def hasData(self, key):
+        """Check if entity has data of a key.
+        """
         return key in self.data
 
     def getData(self, key):
+        """Get data from the entity.
+        """
         return self.data[key][0]
 
     def addData(self, key, value, decay):
+        """Add data to the entity with decay, -1 for no decay.
+        """
         self.data[key] = (value, decay)
 
     def removeData(self, key):
+        """Remove data from the entity.
+        """
         self.data.pop(key)
 
     def detailedBattleDescription(self):
+        """Return the detailed battle description of the entity.
+        """
         to_return = f"{self.name} ({self.faction}) - {self.getClassesLineString()}\n"
         to_return += f"HP: {self.hp}/{self.max_hp}\n"
         to_return += f"XP: {self.xp}\n"
@@ -175,10 +224,14 @@ class EntityInstance:
         return to_return
     
     def getType(self):
+        """Get the entity type of the entity.
+        """
         return self.__entity_type
 
     @classmethod
     def fromDict(cls, data, game):
+        """Deserialize an entity from a dictionary and create an instance.
+        """
         entity = cls(game, game.entity_types[data["type"]] if data["type"] != "" else EntityInstance.NULL_ENTITY_TYPE)
         if "name" in data:
             entity.name = data["name"]
@@ -213,6 +266,8 @@ class EntityInstance:
         return entity
 
     def toDict(self):
+        """Serialize entity to dictionary.
+        """
         return {
             "type": self.__entity_type.id,
             "name": self.name,

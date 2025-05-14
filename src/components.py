@@ -1,25 +1,35 @@
 from .item import ItemInstance
 from .dummy import dummyFindActionType, dummyTestSelfHeal, dummyTestHurt
-import random
+
+# Tada, inheritance.
+# Technically.
 
 class Component:
     def __init__(self):
         pass
 
     def update(self, room, entity):
+        """Game update virtual function.
+        """
         pass
 
     def battle(self, battle, entity, opponents):
+        """Battle update virtual function.
+        """
         pass
 
     def death(self, room, entity):
+        """Death virtual function.
+        """
         pass
 
     @classmethod
     def fromDict(cls, data):
+        """From dict virtual function."""
         return cls(**data)
 
     def toDict(self):
+        """To dict virtual function."""
         return {}
 
 
@@ -29,10 +39,14 @@ class FunctionHolder(Component):
         self.battle_callback = battle
     
     def update(self, room, entity):
+        """Handle the game update for the FunctionHolder component.
+        """
         if self.update_callback != None:
             self.update_callback()
     
     def battle(self, battle, entity, opponents):
+        """Handle battle update for the FunctionHolder component.
+        """
         if self.battle_callback != None:
             self.battle_callback()
 
@@ -41,9 +55,13 @@ class Inventory(Component):
         self.items = [None for _ in range(size)]
 
     def getItem(self, index):
+        """Get item from inventory.
+        """
         return self.items[index]
 
     def addItem(self, itemToAdd):
+        """Adds an item to the inventory.
+        """
         for i, item in enumerate(self.items):
             if (isinstance(item, ItemInstance) and item.getType() == itemToAdd and item.canAddStack(itemToAdd)):
                 item.changeStack(1)
@@ -54,6 +72,8 @@ class Inventory(Component):
         return False
     
     def displayInventory(self):
+        """Returns the display for the inventory.
+        """
         to_return = ""
         for i, item in enumerate(self.items):
             if item != None:
@@ -61,11 +81,14 @@ class Inventory(Component):
         return to_return
     
     def update(self, room, entity):
+        """Handle the game update for the inventory component.
+        """
         for i in range(len(self.items)):
             if isinstance(self.items[i], ItemInstance) and self.items[i].stack == 0:
                 self.items[i] = None
     
     def death(self, room, entity):
+        """Handle the entity death for the inventory component."""
         from .map import Interactable
         for item in self.items:
             if isinstance(item, ItemInstance):
@@ -77,6 +100,8 @@ class Inventory(Component):
 
     @classmethod
     def fromDict(cls, data, game):
+        """Create an Inventory component from a dictionary.
+        """
         inventory = cls(0)
         if "items" in data:
             inventory.items = [
@@ -85,6 +110,8 @@ class Inventory(Component):
         return inventory
 
     def toDict(self):
+        """Convert an Inventory component to a dictionary.
+        """
         return {"type": "inventory", "items": [item.toDict() if item != None else None for item in self.items]}
 
 
@@ -92,11 +119,9 @@ class AI(Component):
     def __init__(self, personality):
         self.personality = personality
 
-    def evaluateOpponents(self, opponents): ...
-
-    def evaluateOptions(self, entity): ...
-
     def update(self, room, entity):
+        """Handle the game update for the AI component.
+        """
         in_battle = entity.hasData("in_battle")
         if not in_battle:
             entities_in_room = (set(room.entities) - {entity}) | {entity.game.player}
@@ -129,6 +154,8 @@ class AI(Component):
             ...
 
     def battle(self, battle, entity, participants):
+        """Handle battle update for the AI component.
+        """
         #print("Battle Was Called")
         opponents = [
             participant for participant in participants if entity.isHostile(participant) and not participant.to_die
@@ -186,113 +213,23 @@ class AI(Component):
 
     @classmethod
     def fromDict(cls, data):
+        """Create an AI component from a dictionary.
+        """
         ai = cls(data["personality"])
         return ai
 
     def toDict(self):
+        """Convert an AI component to a dictionary.
+        """
         return {
             "type": "ai",
-            "personality": {
-                "attack": {
-                    "damage_to_target": {
-                        "overtime": {
-                            "number_of_targets": 1.0,
-                            "kills": 1.0,
-                            "percent_of_total_hp": 1.0,
-                            "percent_of_remaining_hp": 1.0,
-                        },
-                        "instant": {
-                            "number_of_targets": 1.0,
-                            "kills": 1.0,
-                            "percent_of_total_hp": 1.0,
-                            "percent_of_remaining_hp": 1.0,
-                        }
-                    },
-                    "damage_target_can_do": {
-                        "overtime": {
-                            "number_of_targets": 1.0,
-                            "kills": 1.0,
-                            "percent_of_total_hp": 1.0,
-                            "percent_of_remaining_hp": 1.0,
-                        },
-                        "instant": {
-                            "number_of_targets": 1.0,
-                            "kills": 1.0,
-                            "percent_of_total_hp": 1.0,
-                            "percent_of_remaining_hp": 1.0,
-                        }
-                    },
-                    "healing_target_can_do": {
-                        "others": {
-                            "overtime": {
-                                "number_of_targets": 1.0,
-                                "percent_of_total_hp": 1.0,
-                                "percent_of_missing_hp": 1.0,
-                                "percent_of_remaining_hp": 1.0,
-                                "percent_of_max_hp": 1.0,
-                            },
-                            "instant": {
-                                "number_of_targets": 1.0,
-                                "percent_of_total_hp": 1.0,
-                                "percent_of_missing_hp": 1.0,
-                                "percent_of_remaining_hp": 1.0,
-                                "percent_of_max_hp": 1.0,
-                            }
-                        },
-                        "self": {
-                            "overtime": {
-                                "percent_of_total_hp": 1.0,
-                                "percent_of_missing_hp": 1.0,
-                                "percent_of_remaining_hp": 1.0,
-                                "percent_of_max_hp": 1.0,
-                            },
-                            "instant": {
-                                "percent_of_total_hp": 1.0,
-                                "percent_of_missing_hp": 1.0,
-                                "percent_of_remaining_hp": 1.0,
-                                "percent_of_max_hp": 1.0,
-                            }
-                        }
-                    }
-                },
-                "heal": {
-                    "others": {
-                        "overtime": {
-                            "number_of_targets": 1.0,
-                            "percent_of_total_hp": 1.0,
-                            "percent_of_missing_hp": 1.0,
-                            "percent_of_remaining_hp": 1.0,
-                            "percent_of_max_hp": 1.0,
-                        },
-                        "instant": {
-                            "number_of_targets": 1.0,
-                            "percent_of_total_hp": 1.0,
-                            "percent_of_missing_hp": 1.0,
-                            "percent_of_remaining_hp": 1.0,
-                            "percent_of_max_hp": 1.0,
-                        }
-                    },
-                    "self": {
-                        "overtime": {
-                            "percent_of_total_hp": 1.0,
-                            "percent_of_missing_hp": 1.0,
-                            "percent_of_remaining_hp": 1.0,
-                        },
-                        "instant": {
-                            "percent_of_total_hp": 1.0,
-                            "percent_of_missing_hp": 1.0,
-                            "percent_of_remaining_hp": 1.0,
-                        }
-                    }
-                },
-                "flee": {
-                    "percent_of_missing_hp": 1.0
-                }
-            }
+            "personality": self.personality
         }
 
 
 def componentFromData(data, game):
+    """Deserialize a component from a dictionary.
+    """
     if "type" not in data:
         return None
     type = data["type"]

@@ -7,6 +7,8 @@ class LevelDetail:
         self.abilities = abilities
     
     def applyTo(self, apply_to, ability_types):
+        """Apply level details to an entity.
+        """
         for feature in self.features:
             feature([apply_to])
         for ability in self.abilities:
@@ -18,6 +20,8 @@ class LevelDetail:
     
     @classmethod
     def fromDict(cls, game, data):
+        """Load level details from a dictionary.
+        """
         level_detail = cls(game, data["xp_cost"], data["features"], data["abilities"])
 
         return level_detail
@@ -30,6 +34,8 @@ class ClassType:
         self.level_data = level_data
 
     def maxLevel(self):
+        """Get the max level of the class.
+        """
         return len(self.level_data)
     
     def __repr__(self):
@@ -37,6 +43,8 @@ class ClassType:
     
     @classmethod
     def fromDict(cls, game, id, data):
+        """Load classes from a dictionary.
+        """
         class_type = cls(id, data["name"], data["description"], [LevelDetail.fromDict(game, level_data) for level_data in data["level_data"]])
         
         return class_type
@@ -47,13 +55,19 @@ class ClassInstance:
         self.level = level
     
     def getType(self):
+        """Get the class type of the class instance.
+        """
         return self.__class_type
     
     @classmethod
     def fromDict(cls, data, class_types):
+        """Load a class instance from a dictionary.
+        """
         return cls(class_types[data["type"]], data["level"])
     
     def toDict(self):
+        """Convert the class instance to a dictionary.
+        """
         return {
             "type": self.__class_type.id,
             "level": self.level
