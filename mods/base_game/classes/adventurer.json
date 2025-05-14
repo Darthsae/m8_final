@@ -29,6 +29,17 @@
       ]
     },
     {
+      "xp_cost": 25,
+      "features": [
+        {
+          "type": "change_max_hp",
+          "amount": 25,
+          "target": 0
+        }
+      ],
+      "abilities": []
+    },
+    {
       "xp_cost": 50,
       "features": [
         {
