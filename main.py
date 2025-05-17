@@ -1,7 +1,3 @@
-# Playable RPG.
-# 5/14/2025
-# CSC-121 m8Final
-# Daley Ottersbach
 from src.game import Game
 
 # This is over 2000 lines of code.
