@@ -1,8 +1,12 @@
+# pyright: reportRedeclaration=false
+
 from .util import indexOfIndexable
+from typing import Any, Callable, cast
+from .map.Interactable import Interactable
 import random
 
 
-def parse(data, game):
+def parse(data: dict[str, Any], game) -> Callable[[list[Any]], Any]:
     """Parses a dictonary into the proper function and returns it.
     """
     data_type = data["type"]
@@ -10,24 +14,24 @@ def parse(data, game):
     if data_type == "change_hp":
         respect_cap = data["respect_cap"]
         xp_target = data["xp_target"]
-        target = data["target"]
+        target: int = data["target"]
         amount = parseValue(data["amount"])
 
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             if targets[target].changeHP(amount(targets), respect_cap) and xp_target != -1:
                 targets[xp_target].addXP(targets[target].xp)
     elif data_type == "change_xp":
-        target = data["target"]
+        target: int = data["target"]
         amount = parseValue(data["amount"])
 
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             targets[target].addXP(amount(targets))
     elif data_type == "check_data":
         present = data["present"]
         key = data["data"]
-        target = data["target"]
+        target: int = data["target"]
 
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             return (
                 targets[target].hasData(key)
                 if present
@@ -37,23 +41,23 @@ def parse(data, game):
         decay = parseValue(data["decay"])
         key = data["data"]
         value = parseValue(data["value"])
-        target = data["target"]
+        target: int = data["target"]
 
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             targets[target].addData(key, value(targets), decay(targets))
     elif data_type == "flee":
-        target = data["target"]
+        target: int = data["target"]
 
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             targets[target].flee()
     elif data_type == "change_room":
         x_min = data["x_min"]
         x_max = data["x_max"]
         y_min = data["y_min"]
         y_max = data["y_max"]
-        target = data["target"]
+        target: int = data["target"]
 
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             targets[target].changeRoom(
                 random.randint(x_min, x_max), random.randint(y_min, y_max)
             )
@@ -62,17 +66,17 @@ def parse(data, game):
         min = data["min"]
         max = data["max"]
         position = parseValue(data["position"])
-        target = data["target"]
+        target: int = data["target"]
 
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             return min <= targets[target].roomChain(position(targets), room_pool) <= max
     elif data_type == "room_pool_count":
         room_pool = data["room_pool"]
         min = parseValue(data["min"])
         max = parseValue(data["max"])
-        target = data["target"]
+        target: int = data["target"]
 
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             return min(targets) <= targets[target].roomPoolCount(room_pool) <= max(targets)
     elif data_type == "add_entities":
         entities = [
@@ -80,9 +84,9 @@ def parse(data, game):
         ]
         cap = sum(map(indexOfIndexable(0), entities))
         amount = parseValue(data["amount"])
-        target = data["target"]
+        target: int = data["target"]
 
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             temp = random.random() * cap
             for weight, entity_function in entities:
                 temp -= weight
@@ -91,32 +95,31 @@ def parse(data, game):
                         targets[target].addEntity(entity_function())
                     return
     elif data_type == "change_max_hp":
-        target = data["target"]
+        target: int = data["target"]
         amount = parseValue(data["amount"])
 
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             targets[target].max_hp += amount(targets)
             targets[target].hp += amount(targets)
     elif data_type == "change_stack":
-        target = data["target"]
+        target: int = data["target"]
         amount = parseValue(data["amount"])
 
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             targets[target].changeStack(amount(targets))
     elif data_type == "add_interactable":
         info = data["interactable"]
         amount = parseValue(data["amount"])
-        target = data["target"]
-        from .map import Interactable
-        def toReturn(targets):
+        target: int = data["target"]
+        def toReturn(targets: list[Any]):
             for _ in range(amount(targets)):
                 targets[target].addInteractable(Interactable.fromDict(info))
     elif data_type == "add_item":
-        target = data["target"]
+        target: int = data["target"]
         amount = parseValue(data["amount"])
         item_type = parseValue(data["item"])
         from .components import Inventory
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             for component in targets[target].components:
                 if isinstance(component, Inventory):
                     for _ in range(amount(targets)):
@@ -124,55 +127,58 @@ def parse(data, game):
     elif data_type == "remove_interactable":
         interactable = data["interactable"]
         room = data["room"]
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             room_room = targets[room]
             room_room.removeInteractable(targets[interactable])
     elif data_type == "greater_than":
         value_one = parseValue(data["value_one"])
         value_two = parseValue(data["value_two"])
-        def toReturn(targets):
+        def toReturn(targets: list[Any]):
             return value_one(targets) > value_two(targets)
-
+    else:
+        exception: Exception = Exception(data)
+        exception.add_note("Failed to parse the data")
+        raise exception
 
     return toReturn
 
 
-def parseValue(data):
+def parseValue(data: dict[str, Any]) -> Callable[[list[Any]], Any]:
     """Parses a dictionary into a function returning a value.
     """
     if isinstance(data, dict) and "type" in data:
         data_type = data["type"]
         if data_type == "target":
-            target = data["target"]
+            target: int = data["target"]
 
-            def toReturn(targets):
+            def toReturn(targets: list[Any]) -> Any:
                 return targets[target]
         elif data_type == "get_data":
-            data_key = data["data"]
-            target = data["target"]
+            data_key: str = data["data"]
+            target: int = data["target"]
 
-            def toReturn(targets):
+            def toReturn(targets: list[Any]) -> Any:
                 return targets[target].getData(data_key)
         elif data_type == "random_int":
             lower = parseValue(data["lower"])
             upper = parseValue(data["upper"])
             
-            def toReturn(targets):
+            def toReturn(targets: list[Any]) -> int:
                 return random.randint(lower(targets), upper(targets))
         elif data_type == "random_uniform":
             lower = parseValue(data["lower"])
             upper = parseValue(data["upper"])
 
-            def toReturn(targets):
+            def toReturn(targets: list[Any]) -> Any:
                 return random.uniform(lower(targets), upper(targets))
         elif data_type == "add":
             value_one = parseValue(data["value_one"])
             value_two = parseValue(data["value_two"])
 
-            def toReturn(targets):
+            def toReturn(targets: list[Any]) -> Any:
                 return value_one(targets) + value_two(targets)
         else:
-            def toReturn(targets):
+            def toReturn(targets: list[Any]) -> Any:
                 return data
     else:
 
@@ -182,18 +188,19 @@ def parseValue(data):
     return toReturn
 
 
-def parseEntityEntry(data, game):
+def parseEntityEntry(data: dict[str, Any], game) -> tuple[int, Callable[[], Any]]:
     """Parses an entity from a dictionary entity and returns a function to make it.
     """
+    from .entity import EntityInstance, EntityType
     weight = data["weight"]
-    entity_type = game.entity_types[data["type"]]
-    overrides = data["overrides"]
+    entity_type: EntityType = game.entity_types[data["type"]]
+    overrides: dict[str, Any] = data["overrides"]
 
-    from .entity import EntityInstance
-    from .components import componentFromData
+    
+    from .components import componentFromData, Component
 
     def createEntity():
-        entity = EntityInstance(game, entity_type)
+        entity: EntityInstance = EntityInstance(game, entity_type)
         if "name" in overrides:
             entity.name = overrides["name"]
         if "description" in overrides:
@@ -209,12 +216,10 @@ def parseEntityEntry(data, game):
                     if value in entity.tags:
                         entity.tags.remove(value)
         if "components" in overrides:
-            entity.components.extend(
-                [
-                    componentFromData(component_data, game)
-                    for component_data in overrides["components"]
-                ]
-            )
+            entity.components.extend([
+                cast(Component, componentFromData(component_data, game))
+                for component_data in overrides["components"]
+            ])
         if "actions" in overrides:
             for action in overrides["actions"]:
                 entity.addAction(game.ability_types[action])

@@ -1,23 +1,24 @@
-from .classes import ClassInstance
-from .components import componentFromData
+from .classes import ClassInstance, ClassType
+from .components import componentFromData, Component
 from .ability import AbilityInstance
+from typing import Any, Self, cast
 
 
 class EntityType:
-    def __init__(self, id, name, description, tags, hp, xp, speed):
-        self.id = id
-        self.name = name
-        self.description = description
-        self.tags = tags
-        self.hp = hp
-        self.components = []
-        self.actions = []
-        self.classes = []
-        self.xp = xp
-        self.speed = speed
+    def __init__(self, id: str, name: str, description: str, tags: list[str], hp: int, xp: int, speed: int):
+        self.id: str = id
+        self.name: str = name
+        self.description: str = description
+        self.tags: list[str] = tags
+        self.hp: int = hp
+        self.components: list[Component] = []
+        self.actions: list[AbilityInstance] = []
+        self.classes: list[ClassInstance] = []
+        self.xp: int = xp
+        self.speed: int = speed
 
     @classmethod
-    def fromDict(cls, id, data):
+    def fromDict(cls, id, data) -> Self:
         """Load an entity type from a dictionary.
         """
         entity_type = cls(
@@ -35,43 +36,43 @@ class EntityType:
 class EntityInstance:
     NULL_ENTITY_TYPE = EntityType("", "", "", [], 1, 0, 0)
 
-    def __init__(self, game, entity_type):
+    def __init__(self, game, entity_type: EntityType):
         self.game = game
-        self.__entity_type = entity_type
-        self.name = self.__entity_type.name
-        self.description = self.__entity_type.description
-        self.tags = self.__entity_type.tags
-        self.max_hp = self.__entity_type.hp
-        self.hp = self.__entity_type.hp
-        self.components = self.__entity_type.components.copy()
-        self.actions = []
-        self.__classes = []
-        self.xp = self.__entity_type.xp
-        self.speed = self.__entity_type.speed
-        self.faction = ""
-        self.data = {}
-        self.to_die = False
+        self.__entity_type: EntityType = entity_type
+        self.name: str = self.__entity_type.name
+        self.description: str = self.__entity_type.description
+        self.tags: list[str] = self.__entity_type.tags
+        self.max_hp: int = self.__entity_type.hp
+        self.hp: int = self.__entity_type.hp
+        self.components: list[Component] = self.__entity_type.components.copy()
+        self.actions: list[AbilityInstance] = []
+        self.__classes: list[ClassInstance] = []
+        self.xp: int = self.__entity_type.xp
+        self.speed: int = self.__entity_type.speed
+        self.faction: str = ""
+        self.data: dict[str, tuple[Any, int]] = {}
+        self.to_die: bool = False
 
-    def getDescription(self):
+    def getDescription(self) -> str:
         """Return the description of the entity.
         """
         return " ".join(["There is a", self.name, "in the room."])
 
-    def getClassesDisplayString(self):
+    def getClassesDisplayString(self) -> str:
         """Return classes display string.
         """
-        string = ""
+        string: str = ""
         for class_data in self.__classes:
             string += class_data.getType().name + " " + str(class_data.level + 1) + "\n"
         return string
     
-    def getClassesLineString(self):
+    def getClassesLineString(self) -> str:
         """Return classes display string for inline display.
         """
-        string = ", ".join([f"{class_data.getType().name} {class_data.level + 1}" for class_data in self.__classes])
+        string: str = ", ".join([f"{class_data.getType().name} {class_data.level + 1}" for class_data in self.__classes])
         return string
 
-    def hasFaction(self):
+    def hasFaction(self) -> bool:
         """Check if entity has a faction.
         """
         return self.faction != ""
@@ -81,24 +82,21 @@ class EntityInstance:
         """
         return self.game.factions[self.faction]
 
-    def isHostile(self, target):
+    def isHostile(self, target: Self) -> bool:
         """Check if entity is hostile to another.
         """
-        if self.hasFaction() and target.hasFaction():
-            return target.faction in self.getFaction().hostile
-        else:
-            return False
+        return target.faction in self.getFaction().hostile if self.hasFaction() and target.hasFaction() else False
 
-    def addXP(self, amount):
+    def addXP(self, amount: int) -> None:
         """Add xp to the entity.
         """
         self.xp += amount
 
-    def update(self, room):
+    def update(self, room) -> None:
         """Handle game update for entity.
         """
         for key in list(self.data.keys()):
-            value = self.data.pop(key)
+            value: tuple[Any, int] = self.data.pop(key)
             if value[1] == 0:
                 pass
             elif value[1] == -1:
@@ -108,13 +106,13 @@ class EntityInstance:
         for component in self.components:
             component.update(room, self)
 
-    def battleUpdate(self, battle, opponents):
+    def battleUpdate(self, battle, opponents) -> None:
         """Handle battle update for entity.
         """
         for component in self.components:
             component.battle(battle, self, opponents)
 
-    def levelInClass(self, class_type):
+    def levelInClass(self, class_type: ClassType):
         """Get entities current level in a class type, -1 for none.
         """
         for class_instance in self.__classes:
@@ -122,7 +120,7 @@ class EntityInstance:
                 return class_instance.level
         return -1
     
-    def nextXPInClass(self, class_type):
+    def nextXPInClass(self, class_type: ClassType) -> int:
         """Get the next amount of xp to get another level in a class.
         """
         for class_instance in self.__classes:
@@ -130,7 +128,7 @@ class EntityInstance:
                 return class_type.level_data[class_instance.level + 1].xp_cost if class_instance.level + 1 < class_type.maxLevel() else -1
         return class_type.level_data[0].xp_cost
 
-    def gainClassLevel(self, class_type, ability_types):
+    def gainClassLevel(self, class_type: ClassType, ability_types):
         """Gain one leve in a class for the entity.
         """
         for class_instance in self.__classes:
@@ -146,7 +144,7 @@ class EntityInstance:
         class_type.level_data[0].applyTo(self, ability_types)
         self.__classes.append(class_instance)
 
-    def changeHP(self, amount, respect_cap):
+    def changeHP(self, amount: int, respect_cap: bool) -> bool:
         """Change the entities hp, respecting cap if specified.
         """
         pre_hp = max(self.hp, self.max_hp)
@@ -156,6 +154,7 @@ class EntityInstance:
         if self.hp == 0:
             self.to_die = True
             return True
+        return False
 
     def addAction(self, action_type):
         """Add an action to the entity.
@@ -249,7 +248,7 @@ class EntityInstance:
             entity.speed = data["speed"]
         if "components" in data:
             entity.components = [
-                componentFromData(component_data, game)
+                cast(Component, componentFromData(component_data, game))
                 for component_data in data["components"]
             ]
         if "actions" in data:

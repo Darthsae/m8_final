@@ -1,5 +1,6 @@
 from .item import ItemInstance
 from .dummy import dummyFindActionType, dummyTestSelfHeal, dummyTestHurt
+from typing import Optional
 
 # Tada, inheritance.
 # Technically.
@@ -13,7 +14,7 @@ class Component:
         """
         pass
 
-    def battle(self, battle, entity, opponents):
+    def battle(self, battle, entity, participants):
         """Battle update virtual function.
         """
         pass
@@ -44,7 +45,7 @@ class FunctionHolder(Component):
         if self.update_callback != None:
             self.update_callback()
     
-    def battle(self, battle, entity, opponents):
+    def battle(self, battle, entity, participants):
         """Handle battle update for the FunctionHolder component.
         """
         if self.battle_callback != None:
@@ -52,14 +53,14 @@ class FunctionHolder(Component):
 
 class Inventory(Component):
     def __init__(self, size):
-        self.items = [None for _ in range(size)]
+        self.items: list[Optional[ItemInstance]] = [None for _ in range(size)]
 
-    def getItem(self, index):
+    def getItem(self, index: int) -> Optional[ItemInstance]:
         """Get item from inventory.
         """
         return self.items[index]
 
-    def addItem(self, itemToAdd):
+    def addItem(self, itemToAdd) -> bool:
         """Adds an item to the inventory.
         """
         for i, item in enumerate(self.items):
@@ -227,13 +228,13 @@ class AI(Component):
         }
 
 
-def componentFromData(data, game):
+def componentFromData(data, game) -> Optional[Component]:
     """Deserialize a component from a dictionary.
     """
     if "type" not in data:
         return None
-    type = data["type"]
-    if type == "inventory":
-        return Inventory.fromDict(data, game)
-    elif type == "ai":
-        return AI.fromDict(data)
+    match data["type"]:
+        case "inventory":
+            return Inventory.fromDict(data, game)
+        case "ai":
+            return AI.fromDict(data)
